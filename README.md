@@ -20,6 +20,7 @@ El flujo empieza con un mapa de capas y termina con un resumen del estado de cad
 - [Instalación y ejecución](#instalación-y-ejecución)
 - [API](#api)
 - [Cálculo del puntaje de riesgo](#cálculo-del-puntaje-de-riesgo)
+- [Corpus de validación](#corpus-de-validación)
 - [Frontend](#frontend)
 - [Privacidad](#privacidad)
 - [Limitaciones conocidas](#limitaciones-conocidas)
@@ -43,6 +44,8 @@ Proyecto_grado/
 │       ├── image_stressor.py    # Redimensionado y recompresión JPEG
 │       ├── resistance_suite.py  # Suite de resistencia: qué protecciones sobreviven a cada transformación
 │       └── watermark.py         # Dibujo y máscara de la marca visible (sin PyTorch)
+├── backend/scripts/          # Corpus de validación (build_corpus, run_validation) y firmante C2PA de prueba
+├── backend/results/          # CSV de resultados (solo se versionan los example_*.csv)
 └── frontend/                 # React 19 + Vite + Tailwind 4 (JS/JSX)
     ├── vite.config.js        # Proxy de /api hacia el backend
     └── src/
@@ -88,7 +91,33 @@ El puerto debe ser **8000**, porque el proxy de Vite apunta ahí. Para verificar
 curl http://127.0.0.1:8000/api/health
 ```
 
-### Frontend
+### Corpus de validación
+
+El motor de auditoría y la suite de resistencia se validan sobre un corpus de cuatro grupos. Usa solo imágenes propias o con licencia libre. El corpus, los resultados y los certificados no se versionan.
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m scripts.build_corpus ruta/a/mis_imagenes --out corpus --author "Nombre"
+python -m scripts.run_validation --corpus corpus --out results
+```
+
+`build_corpus` normaliza cada imagen a JPEG (calidad 95, sin metadatos), porque IPTC-IIM solo se lee de forma fiable en JPEG, y genera:
+
+| Grupo | Contenido |
+|-------|-----------|
+| `01_sin_metadatos` | Píxeles limpios, sin metadatos |
+| `02_metadatos` | Autoría y copyright en EXIF y XMP (`metadata_writer`) y en IPTC (segmento APP13) |
+| `03_noai` | Lo mismo con `ai_opt_out=True` |
+| `04_c2pa` | Píxeles limpios con un manifiesto C2PA firmado con un certificado de prueba |
+
+Los archivos se llaman `img001.jpg`, `img002.jpg`, ...; `corpus/sources.csv` relaciona cada id con el original. El certificado de prueba se genera solo la primera vez en `scripts/certs/`; ese README explica cómo crearlo con `openssl` y por qué `valid` no implica que el firmante sea de confianza.
+
+`run_validation` escribe `results/audit_corpus.csv` (una fila por imagen, con `matches_expected` según lo que se escribió en su grupo) y `results/stress_results.csv` (una fila por imagen y transformación, con los cuatro indicadores). Termina con código 1 si alguna auditoría no coincide con lo esperado e imprime el rango de correlaciones de la marca para revisar el umbral.
+
+`results/example_audit_corpus.csv` y `results/example_stress_results.csv` son un ejemplo con tres ilustraciones sintéticas generadas por el proyecto (12/12 auditorías coinciden; correlación mínima de la marca 0,81 y control máximo 0,004).
+
+## Frontend
 
 ```bash
 cd frontend
