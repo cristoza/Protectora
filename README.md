@@ -21,6 +21,7 @@ El flujo empieza con un mapa de capas y termina con un resumen del estado de cad
 - [API](#api)
 - [Cálculo del puntaje de riesgo](#cálculo-del-puntaje-de-riesgo)
 - [Corpus de validación](#corpus-de-validación)
+- [Evaluación de usabilidad y comprensión](#evaluación-de-usabilidad-y-comprensión)
 - [Frontend](#frontend)
 - [Privacidad](#privacidad)
 - [Limitaciones conocidas](#limitaciones-conocidas)
@@ -40,6 +41,8 @@ Proyecto_grado/
 │   └── core/
 │       ├── metadata_reader.py   # Lectura de metadatos, categorías, puntaje y C2PA
 │       ├── metadata_writer.py   # Escritura de autoría y etiquetas de exclusión
+│       ├── evaluations.py       # Evaluaciones SUS y de comprensión en SQLite
+│       ├── sus.py               # Puntuación SUS (Brooke, 1996)
 │       ├── image_protector.py   # Cloak adversarial (PGD sobre el VAE) y marca de agua
 │       ├── image_stressor.py    # Redimensionado y recompresión JPEG
 │       ├── resistance_suite.py  # Suite de resistencia: qué protecciones sobreviven a cada transformación
@@ -116,6 +119,33 @@ Los archivos se llaman `img001.jpg`, `img002.jpg`, ...; `corpus/sources.csv` rel
 `run_validation` escribe `results/audit_corpus.csv` (una fila por imagen, con `matches_expected` según lo que se escribió en su grupo) y `results/stress_results.csv` (una fila por imagen y transformación, con los cuatro indicadores). Termina con código 1 si alguna auditoría no coincide con lo esperado e imprime el rango de correlaciones de la marca para revisar el umbral.
 
 `results/example_audit_corpus.csv` y `results/example_stress_results.csv` son un ejemplo con tres ilustraciones sintéticas generadas por el proyecto (12/12 auditorías coinciden; correlación mínima de la marca 0,81 y control máximo 0,004).
+
+## Evaluación de usabilidad y comprensión
+
+La interfaz incluye una evaluación anónima, accesible desde el resumen y desde el pie de página: consentimiento informado, la escala SUS (10 ítems de 1 a 5), un cuestionario de comprensión y una pantalla de agradecimiento.
+
+- **Escala SUS**: `frontend/src/data/evaluation.js`. Se usa la versión en español validada por Sevilla-Gonzalez et al. (2020), *JMIR Human Factors* 7(4):e21161, [doi:10.2196/21161](https://doi.org/10.2196/21161), CC BY 4.0. **Pendiente**: el archivo trae un borrador con `verified: false` y la interfaz muestra un aviso hasta que se copie la redacción literal del Apéndice 2 del artículo y se cambie a `true`.
+- **Comprensión**: `frontend/src/data/comprehension.json`. Cada pregunta tiene `id`, `question`, `options` y `correct`. Se puede editar sin tocar código.
+- **Puntuación SUS** (`backend/core/sus.py`, Brooke, 1996): los ítems impares aportan `respuesta − 1` y los pares `5 − respuesta`; la suma se multiplica por 2,5 (de 0 a 100).
+- **Anonimato**: el código de participante (`XXXX-XXXX`) se genera en el navegador con `crypto.getRandomValues`. El backend guarda en `backend/data/evaluations.sqlite` solo el código, la fecha sin hora, las respuestas SUS, su puntuación y las respuestas de comprensión (opción elegida y si es correcta). Rechaza cualquier otro campo. No guarda imágenes, nombres, IP ni navegador. La carpeta `backend/data/` no se versiona.
+
+### `POST /api/evaluations`
+
+```json
+{"participant_code": "K7QX-M2PA", "sus": [4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
+ "comprehension": {"noai": {"answer": "b", "correct": true}}}
+```
+
+Responde `201` con `{participant_code, sus_score}`, `409` si el código ya envió una evaluación y `422` si algún campo no es válido.
+
+### `GET /api/evaluations/export`
+
+Devuelve un CSV con una fila por participante y una fila final de medias. Está desactivado salvo que se defina `EVAL_EXPORT_TOKEN`, y exige ese valor en la cabecera `Authorization`; si no, responde `403`.
+
+```bash
+EVAL_EXPORT_TOKEN=un-token-largo uvicorn main:app --port 8000
+curl -H "Authorization: Bearer un-token-largo" http://127.0.0.1:8000/api/evaluations/export -o evaluaciones.csv
+```
 
 ## Frontend
 

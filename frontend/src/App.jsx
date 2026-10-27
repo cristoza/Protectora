@@ -11,6 +11,7 @@ import ExclusionStep from './components/steps/ExclusionStep.jsx'
 import PerturbationStep from './components/steps/PerturbationStep.jsx'
 import PublishStep from './components/steps/PublishStep.jsx'
 import SummaryStep from './components/steps/SummaryStep.jsx'
+import EvaluationFlow from './components/EvaluationFlow.jsx'
 
 export default function App() {
   const reduce = useReducedMotion()
@@ -25,11 +26,14 @@ export default function App() {
   // Datos de firma compartidos entre la capa 1 y la versión protegida de la capa 3.
   const [identity, setIdentity] = useState({ author: '', copyright: '', aiOptOut: true, stripGps: true })
   const [checks, setChecks] = useState({})
+  // La evaluación de usabilidad es una vista aparte del recorrido por capas.
+  const [evaluating, setEvaluating] = useState(false)
   const mounted = useRef(false)
 
   const state = { audit, perturbed, cloaked, checks }
   const step = STEPS[index]
   const goTo = (target) => {
+    setEvaluating(false)
     const i = typeof target === 'number' ? target : STEPS.findIndex((s) => s.id === target)
     setDir(i >= index ? 1 : -1)
     setIndex(i)
@@ -70,7 +74,7 @@ export default function App() {
       />
     ),
     publicacion: <PublishStep checks={checks} setChecks={setChecks} goTo={goTo} />,
-    resumen: <SummaryStep state={state} goTo={goTo} />,
+    resumen: <SummaryStep state={state} goTo={goTo} onEvaluate={() => setEvaluating(true)} />,
   }
 
   const prev = STEPS[index - 1]
@@ -123,6 +127,10 @@ export default function App() {
 
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 lg:pt-12">
         <main id="contenido" className="min-w-0">
+          {evaluating ? (
+            <EvaluationFlow onExit={() => setEvaluating(false)} />
+          ) : (
+          <>
           <AnimatePresence mode="wait" initial={false} custom={dir}>
             <motion.div
               key={step.id}
@@ -148,6 +156,8 @@ export default function App() {
               </button>
             )}
           </div>
+          </>
+          )}
         </main>
       </div>
 
@@ -159,6 +169,13 @@ export default function App() {
           </span>
           Tu imagen se analiza en un archivo temporal que se elimina al terminar. No se guarda en el servidor.
         </p>
+        {!evaluating && (
+          <p className="mx-auto mt-3 max-w-6xl px-4 text-sm">
+            <button type="button" className="font-medium text-accent underline underline-offset-4" onClick={() => setEvaluating(true)}>
+              Participar en la evaluación de usabilidad
+            </button>
+          </p>
+        )}
       </footer>
     </div>
   )

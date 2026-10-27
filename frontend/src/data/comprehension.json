@@ -1,0 +1,65 @@
+{
+  "_nota": "Cuestionario de comprensión configurable. Cada pregunta necesita id (letras, números, _ o -), question, options [{id, text}] y correct (id de la opción correcta). Borrador para revisar con la tutoría.",
+  "questions": [
+    {
+      "id": "noai",
+      "question": "¿Qué hace una etiqueta \"noai\" en los metadatos de una imagen?",
+      "options": [
+        { "id": "a", "text": "Impide técnicamente que un programa descargue la imagen" },
+        { "id": "b", "text": "Pide que la imagen no se use para entrenar IA, pero depende de que se respete" },
+        { "id": "c", "text": "Cifra la imagen para que solo la vea su autor" }
+      ],
+      "correct": "b"
+    },
+    {
+      "id": "plataformas",
+      "question": "Si subes una imagen firmada a una red social, ¿qué suele pasar con sus metadatos?",
+      "options": [
+        { "id": "a", "text": "Se conservan siempre" },
+        { "id": "b", "text": "Muchas plataformas los borran o los reducen al recomprimir la imagen" },
+        { "id": "c", "text": "Se convierten en una marca de agua visible" }
+      ],
+      "correct": "b"
+    },
+    {
+      "id": "puntaje",
+      "question": "En Escudo Visual, un puntaje de exposición de 90 significa que la imagen está...",
+      "options": [
+        { "id": "a", "text": "Muy expuesta: casi no declara autoría ni exclusión" },
+        { "id": "b", "text": "Muy protegida" },
+        { "id": "c", "text": "Dañada o ilegible" }
+      ],
+      "correct": "a"
+    },
+    {
+      "id": "perturbacion",
+      "question": "¿Cuál es la idea de una perturbación como Glaze?",
+      "options": [
+        { "id": "a", "text": "Cambiar los píxeles poco para una persona, pero mucho para lo que aprende un modelo" },
+        { "id": "b", "text": "Poner el nombre del autor encima de la imagen" },
+        { "id": "c", "text": "Reducir la resolución para que la imagen no sirva" }
+      ],
+      "correct": "a"
+    },
+    {
+      "id": "c2pa",
+      "question": "¿Para qué sirven las credenciales C2PA?",
+      "options": [
+        { "id": "a", "text": "Para impedir que la imagen se copie" },
+        { "id": "b", "text": "Para registrar de forma firmada quién creó o editó la imagen y cómo" },
+        { "id": "c", "text": "Para comprimir la imagen sin pérdida" }
+      ],
+      "correct": "b"
+    },
+    {
+      "id": "compresion",
+      "question": "Después de recomprimir una imagen en JPEG, ¿qué protección es más probable que siga ahí?",
+      "options": [
+        { "id": "a", "text": "Una marca de agua visible" },
+        { "id": "b", "text": "El manifiesto C2PA válido" },
+        { "id": "c", "text": "Los datos IPTC" }
+      ],
+      "correct": "a"
+    }
+  ]
+}

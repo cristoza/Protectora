@@ -1,14 +1,17 @@
 import base64
+import hmac
 import os
 import tempfile
-from typing import List, Optional
+from typing import Annotated, Dict, List, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import Response
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 from PIL import UnidentifiedImageError
 
+from core import evaluations
 from core.image_protector import ImageProtector
 from core.image_stressor import ImageStressor
 from core.metadata_reader import MetadataReader
@@ -189,3 +192,46 @@ async def audit(file: UploadFile = File(...)):
         # Privacidad: la imagen se elimina siempre, incluso si el análisis falla.
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
+
+
+SusAnswer = Annotated[int, Field(ge=1, le=5, strict=True)]
+QuestionId = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9_-]{1,40}$")]
+
+
+class ComprehensionAnswer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    answer: str = Field(..., pattern=r"^[A-Za-z0-9_-]{1,40}$")
+    correct: bool
+
+
+class Evaluation(BaseModel):
+    # Campos desconocidos se rechazan: así no puede colarse un nombre ni otro dato personal.
+    model_config = ConfigDict(extra="forbid")
+    participant_code: str = Field(..., pattern=r"^[A-Z0-9-]{6,20}$")
+    sus: List[SusAnswer] = Field(..., min_length=10, max_length=10)
+    comprehension: Dict[QuestionId, ComprehensionAnswer] = Field(default_factory=dict, max_length=40)
+
+
+@app.post("/api/evaluations", status_code=201)
+def create_evaluation(body: Evaluation):
+    """Guarda una evaluación anónima (SUS y comprensión) y devuelve la puntuación SUS."""
+    comprehension = {k: v.model_dump() for k, v in body.comprehension.items()}
+    try:
+        score = evaluations.save(body.participant_code, body.sus, comprehension)
+    except evaluations.DuplicateParticipant:
+        raise HTTPException(409, "Este código de participante ya envió su evaluación.")
+    return {"participant_code": body.participant_code, "sus_score": score}
+
+
+@app.get("/api/evaluations/export")
+def export_evaluations(authorization: str = Header("")):
+    """CSV con todas las evaluaciones. Requiere `Authorization: Bearer <EVAL_EXPORT_TOKEN>`."""
+    token = os.environ.get("EVAL_EXPORT_TOKEN", "")
+    given = authorization[7:] if authorization.startswith("Bearer ") else ""
+    if not token or not hmac.compare_digest(given.encode(), token.encode()):
+        raise HTTPException(403, "No tienes permiso para exportar las evaluaciones.")
+    return Response(
+        content=evaluations.export_csv(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="evaluaciones.csv"'},
+    )

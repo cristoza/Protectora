@@ -9,7 +9,7 @@ const ICON = {
   pending: <Circle size={22} className="text-muted" aria-hidden="true" />,
 }
 
-export default function SummaryStep({ state, goTo }) {
+export default function SummaryStep({ state, goTo, onEvaluate }) {
   const statuses = LAYER_STEPS.map((s) => getStatus(s.id, state))
   const done = statuses.filter((s) => s === 'done').length
   const reduce = useReducedMotion()
@@ -70,6 +70,13 @@ export default function SummaryStep({ state, goTo }) {
       <motion.p {...item} className="mt-8 max-w-[60ch] text-sm leading-relaxed text-muted">
         Las capas 1 y 2 salen de tu archivo. Las capas 3 y 4 las marcas tú. Ningún conjunto de capas garantiza que una imagen no se use.
       </motion.p>
+      <motion.div {...item} className="card mt-8 max-w-2xl p-6">
+        <h3 className="text-lg font-semibold">¿Nos ayudas a mejorar?</h3>
+        <p className="mt-1 text-sm text-muted">Una evaluación anónima de 5 minutos sobre la facilidad de uso y lo que aprendiste.</p>
+        <button type="button" className="btn btn-primary mt-4" onClick={onEvaluate}>
+          Participar en la evaluación <ArrowRight size={16} aria-hidden="true" />
+        </button>
+      </motion.div>
     </motion.section>
   )
 }
