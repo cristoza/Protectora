@@ -22,6 +22,7 @@ El flujo empieza con un mapa de capas y termina con un resumen del estado de cad
 - [Cálculo del puntaje de riesgo](#cálculo-del-puntaje-de-riesgo)
 - [Corpus de validación](#corpus-de-validación)
 - [Evaluación de usabilidad y comprensión](#evaluación-de-usabilidad-y-comprensión)
+- [Pruebas](#pruebas)
 - [Frontend](#frontend)
 - [Privacidad](#privacidad)
 - [Limitaciones conocidas](#limitaciones-conocidas)
@@ -51,18 +52,21 @@ Proyecto_grado/
 │       └── watermark.py         # Dibujo y máscara de la marca visible (sin PyTorch)
 ├── backend/scripts/          # Corpus de validación (build_corpus, run_validation) y firmante C2PA de prueba
 ├── backend/results/          # CSV de resultados (solo se versionan los example_*.csv)
+├── backend/tests/            # Pruebas pytest (python -m pytest -q)
 └── frontend/                 # React 19 + Vite + Tailwind 4 (JS/JSX)
     ├── vite.config.js        # Proxy de /api hacia el backend
     └── src/
         ├── App.jsx           # Estado global y navegación entre pasos
         ├── data/layers.js    # Fuente única de verdad: pasos, textos y estados
+        ├── data/literacy.js  # Textos del Módulo 1 (conceptos clave)
+        ├── data/evaluation.js, data/comprehension.json  # Consentimiento, SUS y cuestionario
         ├── lib/motion.js     # Utilidades de animación
         └── components/       # Componentes y vistas de cada paso (steps/)
 ```
 
 | Capa | Tecnologías |
 |------|-------------|
-| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, PyTorch, diffusers, NumPy, pytest |
+| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, NumPy, SQLite (estándar), pytest; PyTorch y diffusers solo con `ENABLE_LIVE_CLOAK=1` o para regenerar ejemplos; cryptography para la firma C2PA de prueba |
 | Frontend | React 19, Vite, Tailwind CSS 4, motion, Phosphor Icons, Geist, oxlint |
 
 ---
@@ -96,60 +100,7 @@ El puerto debe ser **8000**, porque el proxy de Vite apunta ahí. Para verificar
 curl http://127.0.0.1:8000/api/health
 ```
 
-### Corpus de validación
-
-El motor de auditoría y la suite de resistencia se validan sobre un corpus de cuatro grupos. Usa solo imágenes propias o con licencia libre. El corpus, los resultados y los certificados no se versionan.
-
-```bash
-cd backend
-source .venv/bin/activate
-python -m scripts.build_corpus ruta/a/mis_imagenes --out corpus --author "Nombre"
-python -m scripts.run_validation --corpus corpus --out results
-```
-
-`build_corpus` normaliza cada imagen a JPEG (calidad 95, sin metadatos), porque IPTC-IIM solo se lee de forma fiable en JPEG, y genera:
-
-| Grupo | Contenido |
-|-------|-----------|
-| `01_sin_metadatos` | Píxeles limpios, sin metadatos |
-| `02_metadatos` | Autoría y copyright en EXIF y XMP (`metadata_writer`) y en IPTC (segmento APP13) |
-| `03_noai` | Lo mismo con `ai_opt_out=True` |
-| `04_c2pa` | Píxeles limpios con un manifiesto C2PA firmado con un certificado de prueba |
-
-Los archivos se llaman `img001.jpg`, `img002.jpg`, ...; `corpus/sources.csv` relaciona cada id con el original. El certificado de prueba se genera solo la primera vez en `scripts/certs/`; ese README explica cómo crearlo con `openssl` y por qué `valid` no implica que el firmante sea de confianza.
-
-`run_validation` escribe `results/audit_corpus.csv` (una fila por imagen, con `matches_expected` según lo que se escribió en su grupo) y `results/stress_results.csv` (una fila por imagen y transformación, con los cuatro indicadores). Termina con código 1 si alguna auditoría no coincide con lo esperado e imprime el rango de correlaciones de la marca para revisar el umbral.
-
-`results/example_audit_corpus.csv` y `results/example_stress_results.csv` son un ejemplo con tres ilustraciones sintéticas generadas por el proyecto (12/12 auditorías coinciden; correlación mínima de la marca 0,81 y control máximo 0,004).
-
-## Evaluación de usabilidad y comprensión
-
-La interfaz incluye una evaluación anónima, accesible desde el resumen y desde el pie de página: consentimiento informado, la escala SUS (10 ítems de 1 a 5), un cuestionario de comprensión y una pantalla de agradecimiento.
-
-- **Escala SUS**: `frontend/src/data/evaluation.js`. Se usa la versión en español validada por Sevilla-Gonzalez et al. (2020), *JMIR Human Factors* 7(4):e21161, [doi:10.2196/21161](https://doi.org/10.2196/21161), CC BY 4.0. **Pendiente**: el archivo trae un borrador con `verified: false` y la interfaz muestra un aviso hasta que se copie la redacción literal del Apéndice 2 del artículo y se cambie a `true`.
-- **Comprensión**: `frontend/src/data/comprehension.json`. Cada pregunta tiene `id`, `question`, `options` y `correct`. Se puede editar sin tocar código.
-- **Puntuación SUS** (`backend/core/sus.py`, Brooke, 1996): los ítems impares aportan `respuesta − 1` y los pares `5 − respuesta`; la suma se multiplica por 2,5 (de 0 a 100).
-- **Anonimato**: el código de participante (`XXXX-XXXX`) se genera en el navegador con `crypto.getRandomValues`. El backend guarda en `backend/data/evaluations.sqlite` solo el código, la fecha sin hora, las respuestas SUS, su puntuación y las respuestas de comprensión (opción elegida y si es correcta). Rechaza cualquier otro campo. No guarda imágenes, nombres, IP ni navegador. La carpeta `backend/data/` no se versiona.
-
-### `POST /api/evaluations`
-
-```json
-{"participant_code": "K7QX-M2PA", "sus": [4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
- "comprehension": {"noai": {"answer": "b", "correct": true}}}
-```
-
-Responde `201` con `{participant_code, sus_score}`, `409` si el código ya envió una evaluación y `422` si algún campo no es válido.
-
-### `GET /api/evaluations/export`
-
-Devuelve un CSV con una fila por participante y una fila final de medias. Está desactivado salvo que se defina `EVAL_EXPORT_TOKEN`, y exige ese valor en la cabecera `Authorization`; si no, responde `403`.
-
-```bash
-EVAL_EXPORT_TOKEN=un-token-largo uvicorn main:app --port 8000
-curl -H "Authorization: Bearer un-token-largo" http://127.0.0.1:8000/api/evaluations/export -o evaluaciones.csv
-```
-
-## Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -319,6 +270,90 @@ Las etiquetas de exclusión se detectan con `EXCLUSION_PATTERN` (`noai`, `noimag
 
 ---
 
+## Corpus de validación
+
+El motor de auditoría y la suite de resistencia se validan sobre un corpus de cuatro grupos. Usa solo imágenes propias o con licencia libre. El corpus, los resultados y los certificados no se versionan.
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m scripts.build_corpus ruta/a/mis_imagenes --out corpus --author "Nombre"
+python -m scripts.run_validation --corpus corpus --out results
+```
+
+`build_corpus` normaliza cada imagen a JPEG (calidad 95, sin metadatos), porque IPTC-IIM solo se lee de forma fiable en JPEG, y genera:
+
+| Grupo | Contenido |
+|-------|-----------|
+| `01_sin_metadatos` | Píxeles limpios, sin metadatos |
+| `02_metadatos` | Autoría y copyright en EXIF y XMP (`metadata_writer`) y en IPTC (segmento APP13) |
+| `03_noai` | Lo mismo con `ai_opt_out=True` |
+| `04_c2pa` | Píxeles limpios con un manifiesto C2PA firmado con un certificado de prueba |
+
+Los archivos se llaman `img001.jpg`, `img002.jpg`, ...; `corpus/sources.csv` relaciona cada id con el original. El certificado de prueba se genera solo la primera vez en `scripts/certs/`; ese README explica cómo crearlo con `openssl` y por qué `valid` no implica que el firmante sea de confianza.
+
+`run_validation` escribe `results/audit_corpus.csv` (una fila por imagen, con `matches_expected` según lo que se escribió en su grupo) y `results/stress_results.csv` (una fila por imagen y transformación, con los cuatro indicadores). Termina con código 1 si alguna auditoría no coincide con lo esperado e imprime el rango de correlaciones de la marca para revisar el umbral.
+
+`results/example_audit_corpus.csv` y `results/example_stress_results.csv` son un ejemplo con tres ilustraciones sintéticas generadas por el proyecto (12/12 auditorías coinciden; correlación mínima de la marca 0,81 y control máximo 0,004).
+
+---
+
+## Evaluación de usabilidad y comprensión
+
+La interfaz incluye una evaluación anónima, accesible desde el resumen y desde el pie de página: consentimiento informado, la escala SUS (10 ítems de 1 a 5), un cuestionario de comprensión y una pantalla de agradecimiento.
+
+- **Escala SUS**: `frontend/src/data/evaluation.js`. Se usa la versión en español validada por Sevilla-Gonzalez et al. (2020), *JMIR Human Factors* 7(4):e21161, [doi:10.2196/21161](https://doi.org/10.2196/21161), CC BY 4.0. **Pendiente**: el archivo trae un borrador con `verified: false` y la interfaz muestra un aviso hasta que se copie la redacción literal del Apéndice 2 del artículo y se cambie a `true`.
+- **Comprensión**: `frontend/src/data/comprehension.json`. Cada pregunta tiene `id`, `question`, `options` y `correct`. Se puede editar sin tocar código.
+- **Puntuación SUS** (`backend/core/sus.py`, Brooke, 1996): los ítems impares aportan `respuesta − 1` y los pares `5 − respuesta`; la suma se multiplica por 2,5 (de 0 a 100).
+- **Anonimato**: el código de participante (`XXXX-XXXX`) se genera en el navegador con `crypto.getRandomValues`. El backend guarda en `backend/data/evaluations.sqlite` solo el código, la fecha sin hora, las respuestas SUS, su puntuación y las respuestas de comprensión (opción elegida y si es correcta). Rechaza cualquier otro campo. No guarda imágenes, nombres, IP ni navegador. La carpeta `backend/data/` no se versiona.
+
+### `POST /api/evaluations`
+
+```json
+{"participant_code": "K7QX-M2PA", "sus": [4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
+ "comprehension": {"noai": {"answer": "b", "correct": true}}}
+```
+
+Responde `201` con `{participant_code, sus_score}`, `409` si el código ya envió una evaluación y `422` si algún campo no es válido.
+
+### `GET /api/evaluations/export`
+
+Devuelve un CSV con una fila por participante y una fila final de medias. Está desactivado salvo que se defina `EVAL_EXPORT_TOKEN`, y exige ese valor en la cabecera `Authorization`; si no, responde `403`.
+
+```bash
+EVAL_EXPORT_TOKEN=un-token-largo uvicorn main:app --port 8000
+curl -H "Authorization: Bearer un-token-largo" http://127.0.0.1:8000/api/evaluations/export -o evaluaciones.csv
+```
+
+---
+
+## Pruebas
+
+Las pruebas del backend usan pytest y corren sin conexión, sin PyTorch y sin escribir fuera de carpetas temporales:
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m pytest -q
+```
+
+| Archivo | Qué cubre |
+|---------|-----------|
+| `test_score.py` | Penalizaciones, umbrales de riesgo y auditoría de un archivo firmado con C2PA |
+| `test_sus.py` | Puntuación SUS con casos conocidos (50, 100, 0, 75, 87,5) y respuestas inválidas |
+| `test_resistance_suite.py` | Cada transformación, los cuatro indicadores, detección de la marca y control negativo |
+| `test_stress_suite_endpoint.py` | `/api/stress-suite` y sus parámetros |
+| `test_corpus_scripts.py` | IPTC del corpus, `build_corpus` y `run_validation` de punta a punta |
+| `test_evaluations.py` | `/api/evaluations` (solo datos anónimos, duplicados) y la exportación con token |
+| `test_live_cloak.py` | `/api/protect` desactivado por defecto y arranque sin PyTorch |
+| `test_publication_advice.py` | Cada regla del asistente, estimación de calidad JPEG y el endpoint |
+| `test_endpoints_validation.py` | 415, 413 y 422 en todos los endpoints con imagen, y contrato de `/api/audit` |
+| `test_tempfiles.py` | Ningún temporal queda en disco tras éxito, imagen inválida o error inesperado |
+
+La fixture `no_leftover_temp` redirige los temporales de Python a una carpeta propia y falla si queda algo dentro al terminar la prueba. El frontend no tiene pruebas automatizadas; se comprueba con `npm run lint` y `npm run build`.
+
+---
+
 ## Frontend
 
 El frontend es un flujo guiado con siete pasos definidos en `src/data/layers.js`:
@@ -372,6 +407,11 @@ Para agregar o reordenar pasos, se edita `src/data/layers.js`.
 
 Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al terminar, incluso si ocurre un error (bloque `finally`). El servidor no guarda ninguna imagen. Esta garantía se anuncia en el pie de página de la interfaz, así que cualquier cambio en el backend debe mantenerla.
 
+- La suite de resistencia escribe sus archivos intermedios en una carpeta temporal propia que también se borra en `finally`.
+- Lo único que el servidor guarda son las evaluaciones anónimas (`backend/data/evaluations.sqlite`): código aleatorio, fecha, respuestas y puntuación. Nunca imágenes, nombres, IP ni navegador.
+- La interfaz no hace llamadas a internet: los ejemplos del Módulo 1 son archivos locales. Tampoco hay cuentas, inicio de sesión ni analítica.
+- `tests/test_tempfiles.py` comprueba la garantía en todos los endpoints que reciben imágenes, también cuando el análisis falla.
+
 ---
 
 ## Limitaciones conocidas
@@ -383,7 +423,9 @@ Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al
 - Las recomendaciones de la capa 4 salen de datos reales, pero marcarlas como hechas es una declaración de la persona: lo que haga fuera de la app no se verifica.
 - La calidad JPEG se estima invirtiendo la escala de las tablas de cuantización del IJG. Es exacta para archivos de libjpeg y aproximada para programas con tablas propias. No se estima para WebP.
 - Los metadatos no impiden técnicamente el uso de la imagen: muchas plataformas los eliminan al subirla y no todos los *scrapers* respetan las etiquetas de exclusión.
-- El proyecto no tiene pruebas automatizadas.
+- El umbral de la marca defensiva y la validación del corpus se calibraron con imágenes sintéticas. Conviene repetirlos con el corpus real de la investigación.
+- La escala SUS en español está en borrador (`verified: false`) hasta copiar el texto literal de Sevilla-Gonzalez et al. (2020).
+- El frontend no tiene pruebas automatizadas.
 
 ---
 
