@@ -9,3 +9,8 @@ c2pa-python>=0.8,<0.9
 torch
 diffusers
 numpy
+# Pruebas (backend/tests): pytest y httpx, que necesita fastapi.testclient
+pytest
+httpx
+# Firma C2PA con certificado de prueba (scripts/c2pa_test_signer.py, corpus y pruebas)
+cryptography

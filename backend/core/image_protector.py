@@ -23,9 +23,10 @@ import time
 import numpy as np
 import torch
 import torch.nn.functional as F
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageOps
 
 from core.image_stressor import ImageStressor
+from core.watermark import draw_watermark
 
 VAE_ID = "stabilityai/sd-vae-ft-mse"
 WORK_SIDE = 512  # lado mayor con el que trabaja el modelo; más grande agota la memoria en MPS
@@ -114,16 +115,6 @@ def _ssim(a: torch.Tensor, b: torch.Tensor) -> float:
     return float(s.mean())
 
 
-def _font(size: int) -> ImageFont.ImageFont:
-    # La fuente integrada de Pillow no trae tildes ni eñes; se prefiere una del sistema.
-    for name in ("Arial.ttf", "DejaVuSans.ttf", "Helvetica.ttc"):
-        try:
-            return ImageFont.truetype(name, size)
-        except OSError:
-            continue
-    return ImageFont.load_default(size=size)
-
-
 def _psnr(a: torch.Tensor, b: torch.Tensor) -> float:
     mse = float(F.mse_loss(a, b))
     return 99.0 if mse == 0 else float(10 * np.log10(1.0 / mse))
@@ -159,24 +150,7 @@ class ImageProtector:
 
     def watermark(self, text: str, opacity: int) -> Image.Image:
         """Texto repetido en diagonal sobre toda la imagen. `opacity` va de 0 a 100."""
-        base = self.original.convert("RGBA")
-        size = max(16, round(max(base.size) / 18))
-        font = _font(size)
-        diag = int(np.hypot(*base.size)) + size * 4
-        layer = Image.new("RGBA", (diag, diag), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(layer)
-        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-        step_x, step_y = right - left + size * 2, (bottom - top) * 3 + size
-        alpha = round(255 * opacity / 100)
-        for row, y in enumerate(range(0, diag, step_y)):
-            for x in range(-(row % 2) * step_x // 2, diag, step_x):
-                # Contorno oscuro y relleno claro: se lee sobre fondos claros y oscuros.
-                draw.text((x, y), text, font=font, fill=(255, 255, 255, alpha),
-                          stroke_width=max(1, size // 16), stroke_fill=(0, 0, 0, alpha))
-        layer = layer.rotate(30, resample=Image.BICUBIC)
-        ox, oy = (diag - base.width) // 2, (diag - base.height) // 2
-        layer = layer.crop((ox, oy, ox + base.width, oy + base.height))
-        return Image.alpha_composite(base, layer).convert("RGB")
+        return draw_watermark(self.original, text, opacity)
 
     def compare(self, strength: str, text: str, opacity: int) -> dict:
         """Aplica ambos métodos y los mide con las mismas métricas."""

@@ -2,6 +2,7 @@ import StepFrame from '../StepFrame.jsx'
 import CompareSlider from '../CompareSlider.jsx'
 import ProtectionLab from '../ProtectionLab.jsx'
 import StressSimulator from '../StressSimulator.jsx'
+import ResistanceTable from '../ResistanceTable.jsx'
 import { SealCheck } from '@phosphor-icons/react'
 import CheckCard from '../CheckCard.jsx'
 import { STEPS } from '../../data/layers.js'
@@ -19,6 +20,9 @@ export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onP
       </div>
       <div className="mt-10">
         <StressSimulator />
+      </div>
+      <div className="mt-10">
+        <ResistanceTable />
       </div>
       <div className="mt-8 grid max-w-xl gap-3">
         {cloaked && (

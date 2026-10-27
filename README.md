@@ -40,7 +40,9 @@ Proyecto_grado/
 │       ├── metadata_reader.py   # Lectura de metadatos, categorías, puntaje y C2PA
 │       ├── metadata_writer.py   # Escritura de autoría y etiquetas de exclusión
 │       ├── image_protector.py   # Cloak adversarial (PGD sobre el VAE) y marca de agua
-│       └── image_stressor.py    # Redimensionado y recompresión JPEG
+│       ├── image_stressor.py    # Redimensionado y recompresión JPEG
+│       ├── resistance_suite.py  # Suite de resistencia: qué protecciones sobreviven a cada transformación
+│       └── watermark.py         # Dibujo y máscara de la marca visible (sin PyTorch)
 └── frontend/                 # React 19 + Vite + Tailwind 4 (JS/JSX)
     ├── vite.config.js        # Proxy de /api hacia el backend
     └── src/
@@ -52,7 +54,7 @@ Proyecto_grado/
 
 | Capa | Tecnologías |
 |------|-------------|
-| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, PyTorch, diffusers, NumPy |
+| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, PyTorch, diffusers, NumPy, pytest |
 | Frontend | React 19, Vite, Tailwind CSS 4, motion, Phosphor Icons, Geist, oxlint |
 
 ---
@@ -149,6 +151,41 @@ Simula el tratamiento que hacen las plataformas al subir una imagen: redimension
 | `quality` | 1 a 95 |
 | `scale` | 0.1 a 1.0 |
 | `passes` | 1 a 5 |
+
+### `POST /api/stress-suite`
+
+Aplica a la imagen las transformaciones habituales de la web y registra, para cada una, si sobreviven los metadatos (EXIF, XMP, IPTC), las credenciales C2PA, las señales noai y la marca defensiva.
+
+```bash
+curl -F "file=@foto.jpg" -F "watermark_text=© Autor" http://127.0.0.1:8000/api/stress-suite
+```
+
+| Campo | Por defecto | Rango |
+|-------|-------------|-------|
+| `jpeg_qualities` | `50,75` | 1 a 3 valores entre 1 y 95, separados por comas |
+| `resample_side` | `1080` | 64 a 8192 px (lado mayor) |
+| `crop_pct` | `5` | 1 a 40 % de cada borde |
+| `screen_width`, `screen_height` | `1920`, `1080` | 320 a 3840, 240 a 2160 |
+| `watermark_text` | vacío | hasta 40 caracteres; vacío = no se mide la marca |
+| `watermark_opacity` | `35` | 5 a 90 |
+
+Transformaciones: compresión JPEG (una fila por calidad), remuestreo al lado mayor, recorte de bordes, cambio de formato a PNG, JPEG (calidad 90) y WebP (con pérdida, calidad 80), y reducción a la resolución de pantalla seguida de una captura simulada (PNG sin metadatos). La captura es una aproximación: no reproduce el escalado del sistema operativo, la gestión de color ni la interfaz alrededor. Las transformaciones que no son de compresión se guardan en el formato original (TIFF pasa a PNG) con calidad 95.
+
+Las transformaciones conservan lo que Pillow puede copiar (EXIF, XMP y perfil ICC): miden el mejor caso. Pillow no escribe IPTC-IIM ni manifiestos C2PA, así que esos no sobreviven a ninguna recodificación.
+
+Cada fila trae `metadata`, `c2pa`, `noai` y `watermark`, cada uno con `status` igual a `sobrevive`, `no sobrevive` o `no aplica` (el original no tenía esa protección). `baseline` describe el original y `watermark_threshold` el umbral usado.
+
+#### Detección de la marca defensiva
+
+La suite dibuja la marca de `core/watermark.py` sobre una copia de los píxeles, aplica la misma transformación a la copia marcada, a una copia sin marca (control negativo) y a la máscara de la marca, y calcula la correlación de Pearson entre el detalle fino (paso alto, desenfoque gaussiano de radio 4) de la luminancia y el de la máscara. La máscara es la marca a opacidad completa sobre gris medio, así el relleno claro y el contorno oscuro cuentan con su signo, sea cual sea el fondo.
+
+La marca cuenta como detectable si la correlación es **0,10 o más** (`WATERMARK_THRESHOLD`). Calibración con cinco imágenes sintéticas de 2400×1600 (ruido blanco, degradado, formas, texto y negro) en las ocho transformaciones:
+
+| | Mínimo marcado (35 %) | Mínimo marcado (10 %) | Máximo del control sin marca |
+|-|-----------------------|-----------------------|------------------------------|
+| Correlación | 0,17 (ruido blanco) | 0,05 (ruido blanco) | 0,003 |
+
+El umbral queda unas 40 veces por encima del control y por debajo del peor caso con la opacidad por defecto. Con opacidades muy bajas sobre imágenes con mucho detalle, la marca puede salir como no detectable aunque se intuya a simple vista. El umbral se recalibrará con el corpus de validación.
 
 ### `POST /api/protect`
 
