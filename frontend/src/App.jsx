@@ -6,6 +6,7 @@ import BrandMark from './components/BrandMark.jsx'
 import { STEPS } from './data/layers.js'
 import LayerRail from './components/LayerRail.jsx'
 import OverviewStep from './components/steps/OverviewStep.jsx'
+import LiteracyStep from './components/steps/LiteracyStep.jsx'
 import MetadataStep from './components/steps/MetadataStep.jsx'
 import ExclusionStep from './components/steps/ExclusionStep.jsx'
 import PerturbationStep from './components/steps/PerturbationStep.jsx'
@@ -51,6 +52,7 @@ export default function App() {
 
   const views = {
     mapa: <OverviewStep onStart={() => goTo(1)} onSelect={goTo} />,
+    aprende: <LiteracyStep goTo={goTo} />,
     metadatos: (
       <MetadataStep
         audit={audit}

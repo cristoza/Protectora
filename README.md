@@ -69,7 +69,7 @@ Proyecto_grado/
 
 - Python 3.9 (el entorno virtual del proyecto usa 3.9.6).
 - Node.js 20 o superior y npm.
-- Conexión a internet la primera vez que se usa `/api/protect`: el modelo `stabilityai/sd-vae-ft-mse` se descarga a la caché de Hugging Face.
+- Solo con `ENABLE_LIVE_CLOAK=1` o para regenerar los ejemplos: conexión a internet la primera vez, porque el modelo `stabilityai/sd-vae-ft-mse` se descarga a la caché de Hugging Face.
 - Recomendado: Mac con Apple Silicon (el modelo usa MPS si está disponible) o una máquina con suficiente RAM para PyTorch.
 
 ---
@@ -176,7 +176,7 @@ Todos los endpoints que reciben imágenes esperan `multipart/form-data` con el a
 
 ### `GET /api/health`
 
-Comprueba que el backend esté activo.
+Comprueba que el backend esté activo. Devuelve `{"status": "ok", "live_cloak": false}`; `live_cloak` indica si `/api/protect` está activado.
 
 ### `POST /api/audit`
 
@@ -248,6 +248,12 @@ El umbral queda unas 40 veces por encima del control y por debajo del peor caso 
 
 ### `POST /api/protect`
 
+**Desactivado por defecto.** La tesis establece que las comparaciones del Módulo 1 usan ejemplos precalculados, sin ejecutar redes neuronales en tiempo real. Sin `ENABLE_LIVE_CLOAK=1` responde `503` y el backend ni siquiera carga PyTorch. Para activarlo:
+
+```bash
+ENABLE_LIVE_CLOAK=1 uvicorn main:app --reload --port 8000
+```
+
 Genera el cloak adversarial y una marca de agua visible, y los compara con las mismas métricas. Tarda entre 25 y 60 segundos.
 
 | Campo | Valores |
@@ -290,11 +296,12 @@ Las etiquetas de exclusión se detectan con `EXCLUSION_PATTERN` (`noai`, `noimag
 
 ## Frontend
 
-El frontend es un flujo guiado con seis pasos definidos en `src/data/layers.js`:
+El frontend es un flujo guiado con siete pasos definidos en `src/data/layers.js`:
 
 | Paso | Contenido | Cómo se verifica |
 |------|-----------|------------------|
 | Mapa de capas | Introducción a las cuatro capas | No aplica |
+| Conceptos clave (Módulo 1) | Alfabetización: scraping, noai, perturbación adversarial, cloaking frente a envenenamiento, marcas de agua, C2PA y compresión, con el comparador de ejemplos precalculados | No aplica |
 | Autoría en los metadatos | Auditoría (`AuditDropzone`, `DiagnosticPanel`) y firma (`MetadataSigner`) | Con datos reales de la auditoría |
 | Señales de exclusión de IA | Etiquetas de exclusión detectadas | Con datos reales de la auditoría |
 | Perturbación visual | `ProtectionLab` (cloak contra marca de agua) y `StressSimulator` | Cloak generado o casilla de herramienta externa |
@@ -304,6 +311,26 @@ El frontend es un flujo guiado con seis pasos definidos en `src/data/layers.js`:
 Cada capa tiene un estado `done`, `missing` o `pending`, calculado por `getStatus()`. `LayerRail`, en la cabecera fija, permite saltar a cualquier capa. `App.jsx` guarda todo el estado compartido (paso actual, auditoría, imagen perturbada, casillas y datos de firma).
 
 Al firmar una imagen, la auditoría de toda la aplicación pasa a ser la del archivo firmado. La firma está disponible en la capa 1 (sobre el archivo subido) y debajo de los resultados de `ProtectionLab` (sobre el PNG con cloak).
+
+### Ejemplos precalculados (Módulo 1)
+
+`frontend/public/examples/` contiene los resultados reales del sistema sobre una ilustración sintética (paisaje de montañas) dibujada por `backend/scripts/generate_examples.py`, por lo que no hay imágenes de terceros. Se generan una vez, sin conexión una vez descargado el VAE:
+
+```bash
+cd backend && source .venv/bin/activate
+python -m scripts.generate_examples      # escribe en ../frontend/public/examples
+```
+
+| Archivo | Contenido |
+|---------|-----------|
+| `original.png` | Ilustración sintética de 1200×800 px |
+| `cloak.png` | Perturbación de intensidad media (épsilon 8/255, 30 pasos) |
+| `watermark.png` | Marca "© Escudo Visual" al 35 % |
+| `stressed.jpg` | La versión con perturbación reducida al 50 % y recomprimida en JPEG 60 |
+| `*_model.jpg`, `*_diff.jpg` | Reconstrucción del VAE y diferencia ×8 |
+| `manifest.json` | Métricas con la misma forma que la respuesta de `/api/protect` |
+
+`CompareSlider` (paso de conceptos) y `ProtectionLab` (capa 3) leen solo estos archivos locales. `ProtectionLab` consulta `/api/health` y únicamente ofrece subir una imagen y calcular la perturbación si `live_cloak` es `true`. Con los ejemplos precalculados la capa 3 se marca como lista solo con la casilla de herramienta externa.
 
 ### Estilos
 
@@ -326,7 +353,7 @@ Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al
 
 - El lector XMP usa expresiones regulares, no un parser XML completo.
 - `c2pa-python` está fijado en `<0.9` porque la 0.9 exige Python 3.10. La API 0.8 requiere el adaptador `_FileStream`.
-- `CompareSlider` usa una foto de ejemplo de picsum.photos con un filtro de ruido SVG. Es ilustrativo, no una perturbación real, y necesita internet.
+- Los ejemplos precalculados salen de una sola ilustración sintética de colores planos. En imágenes así la perturbación se nota más que en fotografías con textura.
 - La marca de agua que se ve en la vista previa es una aproximación con CSS; la real la dibuja el backend.
 - La capa 4 depende de lo que declara el usuario y no se verifica.
 - Los metadatos no impiden técnicamente el uso de la imagen: muchas plataformas los eliminan al subirla y no todos los *scrapers* respetan las etiquetas de exclusión.

@@ -2,13 +2,13 @@ import { motion } from 'motion/react'
 import StepFrame from '../StepFrame.jsx'
 import CheckCard from '../CheckCard.jsx'
 import { useStagger } from '../../lib/motion.js'
-import { PUBLISH_CHECKS, STEPS } from '../../data/layers.js'
+import { PUBLISH_CHECKS, stepById } from '../../data/layers.js'
 
 export default function PublishStep({ checks, setChecks, goTo }) {
   const { list, item } = useStagger(0.07)
   const done = PUBLISH_CHECKS.filter((c) => checks[c.id]).length
   return (
-    <StepFrame step={STEPS[4]}>
+    <StepFrame step={stepById('publicacion')}>
       <fieldset>
         <legend className="text-lg font-semibold">Antes de subirla</legend>
         <div className="mt-3 flex max-w-xl items-center gap-3">

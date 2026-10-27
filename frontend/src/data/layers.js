@@ -4,8 +4,16 @@
 export const STEPS = [
   {
     id: 'mapa',
+    badge: 'M',
     title: 'Mapa de capas',
     short: 'Visión general',
+  },
+  {
+    id: 'aprende',
+    badge: 'A',
+    title: 'Cómo se usan tus imágenes',
+    short: 'Conceptos clave',
+    lead: 'Antes de proteger tu obra conviene saber cómo la recogen los modelos y qué puede hacer cada protección. Son siete ideas cortas.',
   },
   {
     id: 'metadatos',
@@ -45,12 +53,15 @@ export const STEPS = [
   },
   {
     id: 'resumen',
+    badge: 'R',
     title: 'Resumen',
     short: 'Estado de tus capas',
   },
 ]
 
 export const LAYER_STEPS = STEPS.filter((s) => s.layer)
+
+export const stepById = (id) => STEPS.find((s) => s.id === id)
 
 export const PUBLISH_CHECKS = [
   { id: 'terms', label: 'Leí qué dice la plataforma sobre el uso de imágenes para entrenar IA' },

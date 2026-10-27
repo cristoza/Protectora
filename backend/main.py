@@ -12,7 +12,6 @@ from starlette.concurrency import run_in_threadpool
 from PIL import UnidentifiedImageError
 
 from core import evaluations
-from core.image_protector import ImageProtector
 from core.image_stressor import ImageStressor
 from core.metadata_reader import MetadataReader
 from core.metadata_writer import EXT, MIME, default_copyright, write_metadata
@@ -31,9 +30,17 @@ app.add_middleware(
 )
 
 
+def _live_cloak() -> bool:
+    """El cloak en tiempo real (PyTorch + VAE) solo se activa con ENABLE_LIVE_CLOAK=1.
+
+    Por defecto la interfaz muestra ejemplos precalculados, como establece la tesis.
+    """
+    return os.environ.get("ENABLE_LIVE_CLOAK") == "1"
+
+
 @app.get("/api/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "live_cloak": _live_cloak()}
 
 
 async def _save_upload(file: UploadFile) -> str:
@@ -113,6 +120,11 @@ async def protect(
     watermark_text: str = Form("© Autor", min_length=1, max_length=40),
     watermark_opacity: int = Form(35, ge=5, le=90),
 ):
+    if not _live_cloak():
+        raise HTTPException(503, "La perturbación en tiempo real está desactivada. Inicia el backend con ENABLE_LIVE_CLOAK=1 para usarla.")
+    # PyTorch tarda en cargar y no hace falta si el cloak en vivo está desactivado.
+    from core.image_protector import ImageProtector
+
     tmp_path: Optional[str] = None
     try:
         tmp_path = await _save_upload(file)

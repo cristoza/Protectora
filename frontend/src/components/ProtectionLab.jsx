@@ -169,6 +169,33 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
   const [variant, setVariant] = useState('cloak')
   const [view, setView] = useState('person')
   const [cloakBlob, setCloakBlob] = useState(null)
+  // null mientras se consulta; false = el backend no calcula el cloak en vivo y se muestra el ejemplo precalculado.
+  const [live, setLive] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const showExample = async () => {
+      try {
+        const res = await fetch('/examples/manifest.json')
+        const example = await res.json()
+        if (cancelled) return
+        setOriginalUrl(example.original.image)
+        setResult(example)
+      } catch {
+        if (!cancelled) setError('No se pudo cargar el ejemplo precalculado.')
+      }
+    }
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((d) => d.live_cloak === true)
+      .catch(() => false)
+      .then((on) => {
+        if (cancelled) return
+        setLive(on)
+        if (!on) showExample()
+      })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (!loading) return undefined
@@ -260,6 +287,16 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
       </div>
 
       <div className="p-5 sm:p-8">
+        {live === false && (
+          <p className="rounded-ctl border border-accent/25 bg-accent/5 p-4 text-sm leading-relaxed">
+            <span className="font-semibold">Ejemplo precalculado.</span>{' '}
+            <span className="text-muted">
+              Estos resultados se calcularon una vez, sin conexión, sobre una ilustración generada por el proyecto. Aquí no se
+              ejecuta ningún modelo. Para probar con tu imagen, el servidor debe iniciarse con ENABLE_LIVE_CLOAK=1.
+            </span>
+          </p>
+        )}
+        {live && (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           {/* Imagen elegida, con vista previa aproximada de la marca de agua */}
           <div>
@@ -434,6 +471,7 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
             </div>
           </div>
         </div>
+        )}
 
         {error && (
           <motion.p
