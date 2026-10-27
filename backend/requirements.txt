@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pillow
+piexif
+python-multipart
+# 0.8.x: la 0.9+ exige Python 3.10 (el venv usa 3.9)
+c2pa-python>=0.8,<0.9
+# Protección tipo Glaze (/api/protect): VAE de Stable Diffusion
+torch
+diffusers
+numpy

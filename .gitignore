@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Frontend (ver también frontend/.gitignore)
+node_modules/
+dist/
+
+# Configuración local de agentes / skills de terceros
+.claude/
+.agents/
+skills-lock.json
+
+# Entorno
+.env
+.env.*
