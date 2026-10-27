@@ -7,7 +7,7 @@ La aplicación organiza la protección en cuatro capas:
 1. **Autoría en los metadatos**: autor y copyright en EXIF/XMP/IPTC.
 2. **Señales de exclusión de IA**: etiquetas `noai`, `noimageai`, IPTC `DataMining` y TDMRep `tdm:reservation`.
 3. **Perturbación visual**: un "cloak" tipo Glaze sobre el VAE de Stable Diffusion, comparado con una marca de agua visible.
-4. **Dónde y cómo publicas**: lista de buenas prácticas al publicar.
+4. **Dónde y cómo publicas**: el Asistente de Publicación Segura genera recomendaciones a partir de la auditoría del archivo.
 
 El flujo empieza con un mapa de capas y termina con un resumen del estado de cada una.
 
@@ -41,6 +41,8 @@ Proyecto_grado/
 │   └── core/
 │       ├── metadata_reader.py   # Lectura de metadatos, categorías, puntaje y C2PA
 │       ├── metadata_writer.py   # Escritura de autoría y etiquetas de exclusión
+│       ├── publication_advisor.py  # Asistente de Publicación Segura (evalúa publication_rules.json)
+│       ├── publication_rules.json  # Reglas de recomendación, editables sin tocar código
 │       ├── evaluations.py       # Evaluaciones SUS y de comprensión en SQLite
 │       ├── sus.py               # Puntuación SUS (Brooke, 1996)
 │       ├── image_protector.py   # Cloak adversarial (PGD sobre el VAE) y marca de agua
@@ -273,6 +275,29 @@ Las imágenes se devuelven como data URLs (PNG para las descargas).
 
 ---
 
+### `POST /api/publication-advice`
+
+Audita la imagen y devuelve las recomendaciones del Asistente de Publicación Segura, ordenadas de más a menos importantes.
+
+```json
+{"filename": "foto.jpg", "format": "JPEG", "jpeg_quality": 95, "lossy": true,
+ "recommendations": [{"id": "sin_autor", "severity": "alta", "title": "...", "detail": "...",
+                      "action": {"label": "Firmar en la capa 1", "step": "metadatos"}}]}
+```
+
+Las reglas están en `backend/core/publication_rules.json`. Cada una tiene `id`, `severity` (`alta`, `media`, `info`), `when` (`"always"` o una lista de condiciones `{field, op, value}` que deben cumplirse todas), `title`, `detail` y, opcionalmente, `action` con el paso del frontend al que lleva. `field` es una ruta sobre el reporte de `/api/audit` más `jpeg_quality` (estimada) y `lossy`. Operadores: `eq`, `ne`, `gte`, `lte`, `in`, `empty`, `not_empty`.
+
+| Regla | Cuándo aplica |
+|-------|---------------|
+| `sin_autor`, `sin_copyright` | No hay autoría o copyright: sugiere firmar con `write-metadata` |
+| `sin_noai` | No hay etiquetas de exclusión: ofrece la exclusión de IA |
+| `gps` | Hay datos GPS: sugiere `strip_gps` |
+| `sin_c2pa` / `c2pa_invalida` | No hay C2PA (la procedencia no puede verificarse) o la firma no es válida |
+| `perdida_alta` | JPEG con calidad estimada de 90 o más: sugiere guardar una copia sin pérdida para editar |
+| `terminos`, `reauditar` | Siempre: leer los términos de la plataforma y auditar la versión publicada |
+
+En el frontend, el archivo vigente (el subido en la capa 1 o su última versión firmada) se analiza cada vez que cambia. La capa 4 está lista cuando la persona marca todas las recomendaciones.
+
 ## Cálculo del puntaje de riesgo
 
 El puntaje mide la **exposición**: un valor más alto significa una imagen **más vulnerable**. Parte de 100 y resta penalizaciones por cada protección encontrada:
@@ -305,7 +330,7 @@ El frontend es un flujo guiado con siete pasos definidos en `src/data/layers.js`
 | Autoría en los metadatos | Auditoría (`AuditDropzone`, `DiagnosticPanel`) y firma (`MetadataSigner`) | Con datos reales de la auditoría |
 | Señales de exclusión de IA | Etiquetas de exclusión detectadas | Con datos reales de la auditoría |
 | Perturbación visual | `ProtectionLab` (cloak contra marca de agua) y `StressSimulator` | Cloak generado o casilla de herramienta externa |
-| Dónde y cómo publicas | Lista de comprobación | Declarado por el usuario |
+| Dónde y cómo publicas | Asistente de Publicación Segura: recomendaciones generadas desde la auditoría | La persona marca cada recomendación como hecha |
 | Resumen | Estado de cada capa | No aplica |
 
 Cada capa tiene un estado `done`, `missing` o `pending`, calculado por `getStatus()`. `LayerRail`, en la cabecera fija, permite saltar a cualquier capa. `App.jsx` guarda todo el estado compartido (paso actual, auditoría, imagen perturbada, casillas y datos de firma).
@@ -355,7 +380,8 @@ Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al
 - `c2pa-python` está fijado en `<0.9` porque la 0.9 exige Python 3.10. La API 0.8 requiere el adaptador `_FileStream`.
 - Los ejemplos precalculados salen de una sola ilustración sintética de colores planos. En imágenes así la perturbación se nota más que en fotografías con textura.
 - La marca de agua que se ve en la vista previa es una aproximación con CSS; la real la dibuja el backend.
-- La capa 4 depende de lo que declara el usuario y no se verifica.
+- Las recomendaciones de la capa 4 salen de datos reales, pero marcarlas como hechas es una declaración de la persona: lo que haga fuera de la app no se verifica.
+- La calidad JPEG se estima invirtiendo la escala de las tablas de cuantización del IJG. Es exacta para archivos de libjpeg y aproximada para programas con tablas propias. No se estima para WebP.
 - Los metadatos no impiden técnicamente el uso de la imagen: muchas plataformas los eliminan al subirla y no todos los *scrapers* respetan las etiquetas de exclusión.
 - El proyecto no tiene pruebas automatizadas.
 

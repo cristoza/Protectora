@@ -9,11 +9,12 @@ from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
-from PIL import UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 
 from core import evaluations
 from core.image_stressor import ImageStressor
 from core.metadata_reader import MetadataReader
+from core.publication_advisor import advise, estimate_jpeg_quality, is_lossy
 from core.metadata_writer import EXT, MIME, default_copyright, write_metadata
 from core.resistance_suite import build_transforms, run_suite
 
@@ -178,6 +179,32 @@ async def write_metadata_endpoint(
         for p in (tmp_path, out_path):
             if p and os.path.exists(p):
                 os.remove(p)
+
+
+@app.post("/api/publication-advice")
+async def publication_advice(file: UploadFile = File(...)):
+    """Audita la imagen y devuelve las recomendaciones del Asistente de Publicación Segura."""
+    tmp_path: Optional[str] = None
+    try:
+        tmp_path = await _save_upload(file)
+        audit_result = MetadataReader(tmp_path, file.filename or "imagen").analyze().to_dict()
+        with open(tmp_path, "rb") as fh:
+            raw = fh.read(64)
+        with Image.open(tmp_path) as img:
+            quality, lossy = estimate_jpeg_quality(img), is_lossy(img, raw)
+        return {
+            "filename": audit_result["filename"],
+            "format": audit_result["format"],
+            "jpeg_quality": quality,
+            "lossy": lossy,
+            "recommendations": advise(audit_result, quality, lossy),
+        }
+    except (UnidentifiedImageError, OSError):
+        raise HTTPException(422, "No se pudo leer el archivo como imagen válida.")
+    finally:
+        # Privacidad: la imagen se borra siempre, como en /api/audit.
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 @app.post("/api/audit")

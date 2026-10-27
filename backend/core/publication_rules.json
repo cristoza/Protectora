@@ -1,0 +1,73 @@
+{
+  "_formato": "Cada regla: id, severity (alta|media|info), when (lista de condiciones que deben cumplirse todas, o \"always\"), title, detail y, opcional, action {label, step}. Condición: {field, op, value}. field es una ruta con puntos sobre el reporte de /api/audit más jpeg_quality y lossy. op: eq, ne, gte, lte, in, empty, not_empty.",
+  "rules": [
+    {
+      "id": "sin_autor",
+      "severity": "alta",
+      "when": [{"field": "has_author", "op": "eq", "value": false}],
+      "title": "Agrega tu nombre como autor o autora",
+      "detail": "El archivo no dice quién lo hizo. Escríbelo en los metadatos con la firma de la capa 1 (se guarda en EXIF y XMP sin tocar los píxeles).",
+      "action": {"label": "Firmar en la capa 1", "step": "metadatos"}
+    },
+    {
+      "id": "sin_copyright",
+      "severity": "alta",
+      "when": [{"field": "has_copyright", "op": "eq", "value": false}],
+      "title": "Declara el copyright",
+      "detail": "Sin un aviso de derechos, quien encuentre la imagen no sabe en qué condiciones puede usarla. La firma de la capa 1 lo añade.",
+      "action": {"label": "Firmar en la capa 1", "step": "metadatos"}
+    },
+    {
+      "id": "sin_noai",
+      "severity": "media",
+      "when": [{"field": "exclusion_tags", "op": "empty"}],
+      "title": "Pide que no se use para entrenar IA",
+      "detail": "El archivo no trae ninguna señal de exclusión. Al firmar, deja marcada la opción de exclusión de IA: añade noai, noimageai, IPTC Data Mining y TDMRep.",
+      "action": {"label": "Activar la exclusión", "step": "metadatos"}
+    },
+    {
+      "id": "gps",
+      "severity": "alta",
+      "when": [{"field": "has_gps", "op": "eq", "value": true}],
+      "title": "Quita la ubicación GPS antes de publicar",
+      "detail": "El archivo guarda dónde se tomó o creó la imagen. Al firmar, deja marcada la opción de eliminar el GPS.",
+      "action": {"label": "Eliminar el GPS al firmar", "step": "metadatos"}
+    },
+    {
+      "id": "sin_c2pa",
+      "severity": "info",
+      "when": [{"field": "c2pa.present", "op": "eq", "value": false}],
+      "title": "La procedencia no se puede verificar",
+      "detail": "La imagen no tiene credenciales C2PA, así que nadie puede comprobar de forma firmada quién la creó ni cómo se editó. Algunos programas de edición pueden añadirlas al exportar."
+    },
+    {
+      "id": "c2pa_invalida",
+      "severity": "media",
+      "when": [{"field": "c2pa.present", "op": "eq", "value": true}, {"field": "c2pa.valid", "op": "eq", "value": false}],
+      "title": "Las credenciales C2PA no son válidas",
+      "detail": "El archivo trae un manifiesto C2PA, pero la firma no coincide con la imagen: se modificó después de firmarla. Vuelve a exportarla desde el programa que añade las credenciales."
+    },
+    {
+      "id": "perdida_alta",
+      "severity": "info",
+      "when": [{"field": "lossy", "op": "eq", "value": true}, {"field": "jpeg_quality", "op": "gte", "value": 90}],
+      "title": "Guarda una copia sin pérdida si vas a seguir editando",
+      "detail": "Es un JPEG de calidad alta. Cada vez que se vuelve a guardar en JPEG pierde detalle y debilita una posible perturbación. Para seguir editando usa PNG o TIFF, y exporta el JPEG solo para publicar."
+    },
+    {
+      "id": "terminos",
+      "severity": "info",
+      "when": "always",
+      "title": "Lee qué dice la plataforma sobre entrenar IA",
+      "detail": "Los términos de uso deciden qué puede hacer la plataforma con lo que subes, aunque tu archivo diga otra cosa."
+    },
+    {
+      "id": "reauditar",
+      "severity": "info",
+      "when": "always",
+      "title": "Descarga la imagen publicada y audítala otra vez",
+      "detail": "Muchas plataformas borran los metadatos al subir la imagen. La única forma de saberlo es auditar la versión publicada en la capa 1.",
+      "action": {"label": "Ir a la capa 1", "step": "metadatos"}
+    }
+  ]
+}

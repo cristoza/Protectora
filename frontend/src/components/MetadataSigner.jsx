@@ -54,7 +54,9 @@ export default function MetadataSigner({ file, filename, identity, setIdentity, 
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(errorText(data, res.status))
       setResult({ file, data })
-      onSigned?.(data.audit)
+      // El archivo firmado pasa a ser el vigente: el asistente de publicación lo analiza a él.
+      const blob = await (await fetch(data.image)).blob()
+      onSigned?.(data.audit, new File([blob], data.filename, { type: blob.type }))
     } catch (err) {
       if (err.name === 'AbortError') return
       setError(

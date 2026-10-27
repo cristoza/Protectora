@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react'
 import { EASE, SPRING } from './lib/motion.js'
+import usePublicationAdvice from './lib/usePublicationAdvice.js'
 import BrandMark from './components/BrandMark.jsx'
 import { STEPS } from './data/layers.js'
 import LayerRail from './components/LayerRail.jsx'
@@ -27,12 +28,19 @@ export default function App() {
   // Datos de firma compartidos entre la capa 1 y la versión protegida de la capa 3.
   const [identity, setIdentity] = useState({ author: '', copyright: '', aiOptOut: true, stripGps: true })
   const [checks, setChecks] = useState({})
+  // Archivo vigente: el subido en la capa 1 o su última versión firmada.
+  const [current, setCurrent] = useState(null)
+  const publication = usePublicationAdvice(current)
   // La evaluación de usabilidad es una vista aparte del recorrido por capas.
   const [evaluating, setEvaluating] = useState(false)
   const mounted = useRef(false)
 
-  const state = { audit, perturbed, cloaked, checks }
+  const state = { audit, perturbed, cloaked, checks, advice: publication.advice }
   const step = STEPS[index]
+  const onSigned = (signedAudit, file) => {
+    setAudit(signedAudit)
+    if (file) setCurrent(file)
+  }
   const goTo = (target) => {
     setEvaluating(false)
     const i = typeof target === 'number' ? target : STEPS.findIndex((s) => s.id === target)
@@ -57,8 +65,8 @@ export default function App() {
       <MetadataStep
         audit={audit}
         source={source}
-        onResult={(data, file) => { setAudit(data); setSource({ file, audit: data }) }}
-        onSigned={setAudit}
+        onResult={(data, file) => { setAudit(data); setSource({ file, audit: data }); setCurrent(file) }}
+        onSigned={onSigned}
         identity={identity}
         setIdentity={setIdentity}
       />
@@ -70,12 +78,12 @@ export default function App() {
         setPerturbed={setPerturbed}
         cloaked={cloaked}
         onProtected={() => setCloaked(true)}
-        onSigned={setAudit}
+        onSigned={onSigned}
         identity={identity}
         setIdentity={setIdentity}
       />
     ),
-    publicacion: <PublishStep checks={checks} setChecks={setChecks} goTo={goTo} />,
+    publicacion: <PublishStep publication={publication} checks={checks} setChecks={setChecks} goTo={goTo} />,
     resumen: <SummaryStep state={state} goTo={goTo} onEvaluate={() => setEvaluating(true)} />,
   }
 
