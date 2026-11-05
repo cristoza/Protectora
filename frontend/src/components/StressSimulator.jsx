@@ -26,14 +26,16 @@ function Slider({ id, label, hint, value, min, max, step, onChange, display }) {
 }
 
 // Módulo 3: reenvía la imagen al backend con compresión y reducción, como lo haría una plataforma.
-export default function StressSimulator() {
+export default function StressSimulator({ settings, setSettings }) {
   const inputRef = useRef(null)
   const [file, setFile] = useState(null)
   const [originalUrl, setOriginalUrl] = useState(null)
   const [stressed, setStressed] = useState(null) // { url, size }
-  const [quality, setQuality] = useState(60)
-  const [scalePct, setScalePct] = useState(50)
-  const [passes, setPasses] = useState(1)
+  // Ajustes guardados por quien usa el simulador (en Laboratorio, el proyecto abierto).
+  const { quality, scalePct, passes } = settings
+  const setQuality = (v) => setSettings({ ...settings, quality: v })
+  const setScalePct = (v) => setSettings({ ...settings, scalePct: v })
+  const setPasses = (v) => setSettings({ ...settings, passes: v })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 

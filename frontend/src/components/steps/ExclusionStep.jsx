@@ -2,7 +2,7 @@ import { CheckCircle, MinusCircle } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import StepFrame from '../StepFrame.jsx'
 import { useStagger } from '../../lib/motion.js'
-import { STEPS } from '../../data/layers.js'
+import { stepById } from '../../data/layers.js'
 
 // Mismas directivas que reconoce el backend (EXCLUSION_PATTERN).
 const DIRECTIVES = [
@@ -19,7 +19,7 @@ export default function ExclusionStep({ audit, goTo }) {
   const has = (tag) => found.some((f) => f.replace(/[\s_-]/g, '') === tag.replace(/[\s_-]/g, ''))
 
   return (
-    <StepFrame step={STEPS[2]}>
+    <StepFrame step={stepById('exclusion')}>
       {!audit ? (
         <div className="card max-w-xl border-dashed p-8">
           <p className="text-lg font-medium">Aún no hay una imagen auditada</p>

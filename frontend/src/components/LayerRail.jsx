@@ -44,9 +44,10 @@ export default function LayerRail({ current, onSelect, state }) {
                     active ? 'bg-white text-accent' : passed ? 'bg-accent text-white' : 'bg-white text-muted ring-1 ring-line'
                   }`}
                 >
-                  {s.layer ?? (i === 0 ? 'M' : 'R')}
+                  {s.layer ?? s.badge}
                 </span>
-                <span className="relative whitespace-nowrap">{s.short}</span>
+                {/* Los pasos sin capa (mapa, conceptos, resumen) solo muestran su letra si no están activos, para que quepa todo el riel. */}
+                <span className={`relative whitespace-nowrap ${!s.layer && !active ? 'sr-only' : ''}`}>{s.short}</span>
                 {status && BADGE[status] && (
                   <AnimatePresence mode="popLayout" initial={false}>
                     <motion.span

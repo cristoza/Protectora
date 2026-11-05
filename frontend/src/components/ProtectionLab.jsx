@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowsHorizontal, Brain, DownloadSimple, Drop, Eye, ImageSquare, ShieldCheck, Sparkle, Stamp, Trophy, UploadSimple, X } from '@phosphor-icons/react'
 import { EASE, SPRING } from '../lib/motion.js'
 import MetadataSigner from './MetadataSigner.jsx'
+import SaveImageButton from './SaveImageButton.jsx'
 
 const STRENGTHS = [
   { id: 'baja', label: 'Baja', hint: 'Casi invisible', bars: 1 },
@@ -46,7 +47,7 @@ function Ring({ value, label, color, size = 92 }) {
 }
 
 // Marcador de una técnica: parecido para persona, modelo y modelo tras JPEG.
-function ScoreCard({ variant, data, subtitle, best, download }) {
+function ScoreCard({ variant, data, subtitle, best, download, kind, live }) {
   const reduce = useReducedMotion()
   const Icon = variant.icon
   return (
@@ -84,6 +85,8 @@ function ScoreCard({ variant, data, subtitle, best, download }) {
       <a href={data.image} download={download} className="btn btn-outline mt-5 bg-white">
         <DownloadSimple size={16} aria-hidden="true" /> Descargar PNG
       </a>
+      {/* El ejemplo precalculado no es una imagen del usuario: no se ofrece guardarlo. */}
+      {live && <SaveImageButton source={data.image} filename={download} kind={kind} className="mt-2" />}
     </motion.article>
   )
 }
@@ -152,16 +155,20 @@ function Segmented({ name, label, options, value, onChange, disabled }) {
 
 // Protección tipo Glaze calculada en el backend contra el VAE de Stable Diffusion,
 // comparada con una marca de agua visible usando las mismas métricas.
-export default function ProtectionLab({ onProtected, onSigned, identity, setIdentity }) {
+export default function ProtectionLab({ onProtected, onSigned, identity, setIdentity, protection, setProtection }) {
   const reduce = useReducedMotion()
   const inputRef = useRef(null)
   const ctrlRef = useRef(null)
   const [file, setFile] = useState(null)
   const [originalUrl, setOriginalUrl] = useState(null)
   const [dragging, setDragging] = useState(false)
-  const [strength, setStrength] = useState('media')
-  const [text, setText] = useState('© Autor')
-  const [opacity, setOpacity] = useState(35)
+  // Ajustes de la perturbación y la marca: los guarda quien usa el laboratorio (en Aprendizaje, el proyecto).
+  const { strength, watermarkText: text, watermarkOpacity: opacity } = protection
+  const setStrength = (v) => setProtection({ ...protection, strength: v })
+  const setText = (v) => setProtection({ ...protection, watermarkText: v })
+  const setOpacity = (v) => setProtection({ ...protection, watermarkOpacity: v })
+  // La marca de agua es solo una comparación opcional: su vista previa aparece al abrirla.
+  const [compare, setCompare] = useState(false)
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState(null)
@@ -169,6 +176,33 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
   const [variant, setVariant] = useState('cloak')
   const [view, setView] = useState('person')
   const [cloakBlob, setCloakBlob] = useState(null)
+  // null mientras se consulta; false = el backend no calcula el cloak en vivo y se muestra el ejemplo precalculado.
+  const [live, setLive] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const showExample = async () => {
+      try {
+        const res = await fetch('/examples/manifest.json')
+        const example = await res.json()
+        if (cancelled) return
+        setOriginalUrl(example.original.image)
+        setResult(example)
+      } catch {
+        if (!cancelled) setError('No se pudo cargar el ejemplo precalculado.')
+      }
+    }
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((d) => d.live_cloak === true)
+      .catch(() => false)
+      .then((on) => {
+        if (cancelled) return
+        setLive(on)
+        if (!on) showExample()
+      })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (!loading) return undefined
@@ -249,17 +283,27 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">Laboratorio de protección</p>
-            <h3 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Perturbación contra marca de agua</h3>
+            <h3 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Perturbación de píxeles tipo Glaze</h3>
             <p className="mt-2 max-w-[62ch] text-white/85">
               La perturbación hace como Glaze: busca cambios de píxel pequeños que confunden al codificador de Stable Diffusion,
-              el mismo que usan muchos generadores de imágenes. La marca de agua, en cambio, se ve, pero el modelo la aprende
-              sin problema. Aquí ves las dos con las mismas medidas.
+              el mismo que usan muchos generadores de imágenes. Sube tu imagen, aplica la perturbación y descarga el PNG
+              protegido. Si quieres, compárala con una marca de agua visible usando las mismas medidas.
             </p>
           </div>
         </div>
       </div>
 
       <div className="p-5 sm:p-8">
+        {live === false && (
+          <p className="rounded-ctl border border-accent/25 bg-accent/5 p-4 text-sm leading-relaxed">
+            <span className="font-semibold">Ejemplo precalculado.</span>{' '}
+            <span className="text-muted">
+              Estos resultados se calcularon una vez, sin conexión, sobre una ilustración generada por el proyecto. Aquí no se
+              ejecuta ningún modelo. Para probar con tu imagen, el servidor debe iniciarse con ENABLE_LIVE_CLOAK=1.
+            </span>
+          </p>
+        )}
+        {live && (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           {/* Imagen elegida, con vista previa aproximada de la marca de agua */}
           <div>
@@ -286,6 +330,7 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
                 <>
                   <img src={originalUrl} alt="Imagen elegida" className="absolute inset-0 h-full w-full object-contain" />
                   {/* Vista previa aproximada de la marca: la real la dibuja el servidor. */}
+                  {compare && (
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 grid grid-cols-3 place-items-center overflow-hidden"
@@ -297,6 +342,7 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
                       </span>
                     ))}
                   </div>
+                  )}
                   {!loading && (
                     <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-ink opacity-0 shadow transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
                       <UploadSimple size={14} aria-hidden="true" /> Cambiar imagen
@@ -342,7 +388,7 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
               accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,image/*"
               onChange={(e) => { pick(e.target.files[0]); e.target.value = '' }}
             />
-            {file && <p className="mt-2 text-xs text-muted">La marca que ves encima es una vista previa aproximada. La real la dibuja el servidor.</p>}
+            {file && compare && <p className="mt-2 text-xs text-muted">La marca que ves encima es una vista previa aproximada. La real la dibuja el servidor.</p>}
           </div>
 
           {/* Ajustes */}
@@ -379,11 +425,13 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
               </div>
             </fieldset>
 
-            <fieldset disabled={loading || !file} className="grid gap-4">
-              <legend className="flex items-center gap-2 font-semibold">
-                <Stamp size={18} weight="fill" className="text-accent" aria-hidden="true" /> Marca de agua para comparar
-              </legend>
-              <div className="mt-3">
+            <details open={compare} onToggle={(e) => setCompare(e.currentTarget.open)} className="rounded-ctl border-2 border-line bg-white p-4">
+              <summary className="flex cursor-pointer items-center gap-2 font-semibold">
+                <Stamp size={18} weight="fill" className="text-accent" aria-hidden="true" /> Comparar con una marca de agua (opcional)
+              </summary>
+            <fieldset disabled={loading || !file} className="mt-3 grid gap-4">
+              <legend className="sr-only">Marca de agua para comparar</legend>
+              <div>
                 <label htmlFor="wm-text" className="text-sm font-medium text-muted">Texto</label>
                 <input
                   id="wm-text" type="text" maxLength={40} value={text}
@@ -405,6 +453,7 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
                 />
               </div>
             </fieldset>
+            </details>
 
             <div aria-live="polite">
               {loading ? (
@@ -428,12 +477,13 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
               ) : (
                 <button type="button" className="btn btn-primary group w-full py-4 text-base font-semibold" onClick={run} disabled={!file}>
                   <ShieldCheck size={20} weight="fill" aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
-                  {result ? 'Volver a calcular' : 'Proteger y comparar'}
+                  {result ? 'Volver a aplicar la perturbación' : 'Aplicar perturbación'}
                 </button>
               )}
             </div>
           </div>
         </div>
+        )}
 
         {error && (
           <motion.p
@@ -468,13 +518,17 @@ export default function ProtectionLab({ onProtected, onSigned, identity, setIden
                 un <strong>{pct(result.watermark.model_similarity)}</strong>.
               </p>
 
+              <a href={result.cloak.image} download="imagen-protegida.png" className="btn btn-primary mt-6 py-4 text-base font-semibold">
+                <DownloadSimple size={20} aria-hidden="true" /> Descargar imagen con perturbación (PNG)
+              </a>
+
               <div className="mt-8 grid gap-5 md:grid-cols-2">
                 <ScoreCard
-                  variant={VARIANTS[0]} data={result.cloak} best={best === 'cloak'} download="imagen-protegida.png"
+                  variant={VARIANTS[0]} data={result.cloak} best={best === 'cloak'} download="imagen-protegida.png" kind="perturbacion" live={live}
                   subtitle={`Intensidad ${s.strength}, hasta ±${s.epsilon} niveles por píxel`}
                 />
                 <ScoreCard
-                  variant={VARIANTS[1]} data={result.watermark} best={best === 'watermark'} download="imagen-marca-de-agua.png"
+                  variant={VARIANTS[1]} data={result.watermark} best={best === 'watermark'} download="imagen-marca-de-agua.png" kind="marca_agua" live={live}
                   subtitle={`"${result.mark.text}" al ${result.mark.opacity} %`}
                 />
               </div>

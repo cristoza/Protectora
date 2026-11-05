@@ -1,0 +1,97 @@
+group,file,transform,output_format,output_width,output_height,output_bytes,metadata,exif,xmp,iptc,c2pa,c2pa_valid_before,c2pa_valid_after,noai,watermark,watermark_correlation,watermark_control
+01_sin_metadatos,img001.jpg,jpeg_q50,JPEG,1600,1067,68667,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8284,-0.0005
+01_sin_metadatos,img001.jpg,jpeg_q75,JPEG,1600,1067,90727,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8381,-0.0002
+01_sin_metadatos,img001.jpg,resample_1080,JPEG,1080,720,126119,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.812,-0.0014
+01_sin_metadatos,img001.jpg,crop_5,JPEG,1440,961,158335,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.851,-0.0028
+01_sin_metadatos,img001.jpg,format_png,PNG,1600,1067,870549,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8495,-0.0002
+01_sin_metadatos,img001.jpg,format_jpeg,JPEG,1600,1067,142167,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8452,-0.0002
+01_sin_metadatos,img001.jpg,format_webp,WEBP,1600,1067,47054,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.841,-0.0002
+01_sin_metadatos,img001.jpg,screenshot,PNG,1600,1067,870549,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8495,-0.0002
+01_sin_metadatos,img002.jpg,jpeg_q50,JPEG,1600,1067,69620,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8407,0.0007
+01_sin_metadatos,img002.jpg,jpeg_q75,JPEG,1600,1067,91529,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8502,0.0007
+01_sin_metadatos,img002.jpg,resample_1080,JPEG,1080,720,124271,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8268,0.0004
+01_sin_metadatos,img002.jpg,crop_5,JPEG,1440,961,156681,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8631,-0.0026
+01_sin_metadatos,img002.jpg,format_png,PNG,1600,1067,864144,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8619,0.0007
+01_sin_metadatos,img002.jpg,format_jpeg,JPEG,1600,1067,140628,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8573,0.0007
+01_sin_metadatos,img002.jpg,format_webp,WEBP,1600,1067,48206,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8535,0.0008
+01_sin_metadatos,img002.jpg,screenshot,PNG,1600,1067,864144,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8619,0.0007
+01_sin_metadatos,img003.jpg,jpeg_q50,JPEG,1600,1067,69969,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8386,-0.0031
+01_sin_metadatos,img003.jpg,jpeg_q75,JPEG,1600,1067,91921,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8481,-0.0033
+01_sin_metadatos,img003.jpg,resample_1080,JPEG,1080,720,123700,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8236,-0.0036
+01_sin_metadatos,img003.jpg,crop_5,JPEG,1440,961,158086,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8524,-0.0038
+01_sin_metadatos,img003.jpg,format_png,PNG,1600,1067,870223,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8594,-0.0033
+01_sin_metadatos,img003.jpg,format_jpeg,JPEG,1600,1067,140437,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8551,-0.0033
+01_sin_metadatos,img003.jpg,format_webp,WEBP,1600,1067,48654,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8511,-0.0032
+01_sin_metadatos,img003.jpg,screenshot,PNG,1600,1067,870223,no aplica,no aplica,no aplica,no aplica,no aplica,False,False,no aplica,sobrevive,0.8594,-0.0033
+02_metadatos,img001.jpg,jpeg_q50,JPEG,1600,1067,69485,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8284,-0.0005
+02_metadatos,img001.jpg,jpeg_q75,JPEG,1600,1067,91545,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8381,-0.0002
+02_metadatos,img001.jpg,resample_1080,JPEG,1080,720,126937,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.812,-0.0014
+02_metadatos,img001.jpg,crop_5,JPEG,1440,961,159153,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.851,-0.0028
+02_metadatos,img001.jpg,format_png,PNG,1600,1067,871370,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8495,-0.0002
+02_metadatos,img001.jpg,format_jpeg,JPEG,1600,1067,142985,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8452,-0.0002
+02_metadatos,img001.jpg,format_webp,WEBP,1600,1067,47864,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.841,-0.0002
+02_metadatos,img001.jpg,screenshot,PNG,1600,1067,870549,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8495,-0.0002
+02_metadatos,img002.jpg,jpeg_q50,JPEG,1600,1067,70438,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8407,0.0007
+02_metadatos,img002.jpg,jpeg_q75,JPEG,1600,1067,92347,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8502,0.0007
+02_metadatos,img002.jpg,resample_1080,JPEG,1080,720,125089,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8268,0.0004
+02_metadatos,img002.jpg,crop_5,JPEG,1440,961,157499,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8631,-0.0026
+02_metadatos,img002.jpg,format_png,PNG,1600,1067,864965,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8619,0.0007
+02_metadatos,img002.jpg,format_jpeg,JPEG,1600,1067,141446,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8573,0.0007
+02_metadatos,img002.jpg,format_webp,WEBP,1600,1067,49016,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8535,0.0008
+02_metadatos,img002.jpg,screenshot,PNG,1600,1067,864144,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8619,0.0007
+02_metadatos,img003.jpg,jpeg_q50,JPEG,1600,1067,70787,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8386,-0.0031
+02_metadatos,img003.jpg,jpeg_q75,JPEG,1600,1067,92739,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8481,-0.0033
+02_metadatos,img003.jpg,resample_1080,JPEG,1080,720,124518,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8236,-0.0036
+02_metadatos,img003.jpg,crop_5,JPEG,1440,961,158904,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8524,-0.0038
+02_metadatos,img003.jpg,format_png,PNG,1600,1067,871044,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8594,-0.0033
+02_metadatos,img003.jpg,format_jpeg,JPEG,1600,1067,141255,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8551,-0.0033
+02_metadatos,img003.jpg,format_webp,WEBP,1600,1067,49464,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8511,-0.0032
+02_metadatos,img003.jpg,screenshot,PNG,1600,1067,870223,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no aplica,sobrevive,0.8594,-0.0033
+03_noai,img001.jpg,jpeg_q50,JPEG,1600,1067,69896,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8284,-0.0005
+03_noai,img001.jpg,jpeg_q75,JPEG,1600,1067,91956,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8381,-0.0002
+03_noai,img001.jpg,resample_1080,JPEG,1080,720,127348,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.812,-0.0014
+03_noai,img001.jpg,crop_5,JPEG,1440,961,159564,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.851,-0.0028
+03_noai,img001.jpg,format_png,PNG,1600,1067,871781,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8495,-0.0002
+03_noai,img001.jpg,format_jpeg,JPEG,1600,1067,143396,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8452,-0.0002
+03_noai,img001.jpg,format_webp,WEBP,1600,1067,48274,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.841,-0.0002
+03_noai,img001.jpg,screenshot,PNG,1600,1067,870549,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no sobrevive,sobrevive,0.8495,-0.0002
+03_noai,img002.jpg,jpeg_q50,JPEG,1600,1067,70849,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8407,0.0007
+03_noai,img002.jpg,jpeg_q75,JPEG,1600,1067,92758,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8502,0.0007
+03_noai,img002.jpg,resample_1080,JPEG,1080,720,125500,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8268,0.0004
+03_noai,img002.jpg,crop_5,JPEG,1440,961,157910,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8631,-0.0026
+03_noai,img002.jpg,format_png,PNG,1600,1067,865376,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8619,0.0007
+03_noai,img002.jpg,format_jpeg,JPEG,1600,1067,141857,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8573,0.0007
+03_noai,img002.jpg,format_webp,WEBP,1600,1067,49426,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8535,0.0008
+03_noai,img002.jpg,screenshot,PNG,1600,1067,864144,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no sobrevive,sobrevive,0.8619,0.0007
+03_noai,img003.jpg,jpeg_q50,JPEG,1600,1067,71198,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8386,-0.0031
+03_noai,img003.jpg,jpeg_q75,JPEG,1600,1067,93150,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8481,-0.0033
+03_noai,img003.jpg,resample_1080,JPEG,1080,720,124929,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8236,-0.0036
+03_noai,img003.jpg,crop_5,JPEG,1440,961,159315,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8524,-0.0038
+03_noai,img003.jpg,format_png,PNG,1600,1067,871455,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8594,-0.0033
+03_noai,img003.jpg,format_jpeg,JPEG,1600,1067,141666,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8551,-0.0033
+03_noai,img003.jpg,format_webp,WEBP,1600,1067,49874,no sobrevive,sobrevive,sobrevive,no sobrevive,no aplica,False,False,sobrevive,sobrevive,0.8511,-0.0032
+03_noai,img003.jpg,screenshot,PNG,1600,1067,870223,no sobrevive,no sobrevive,no sobrevive,no sobrevive,no aplica,False,False,no sobrevive,sobrevive,0.8594,-0.0033
+04_c2pa,img001.jpg,jpeg_q50,JPEG,1600,1067,68667,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8284,-0.0005
+04_c2pa,img001.jpg,jpeg_q75,JPEG,1600,1067,90727,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8381,-0.0002
+04_c2pa,img001.jpg,resample_1080,JPEG,1080,720,126119,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.812,-0.0014
+04_c2pa,img001.jpg,crop_5,JPEG,1440,961,158335,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.851,-0.0028
+04_c2pa,img001.jpg,format_png,PNG,1600,1067,870549,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8495,-0.0002
+04_c2pa,img001.jpg,format_jpeg,JPEG,1600,1067,142167,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8452,-0.0002
+04_c2pa,img001.jpg,format_webp,WEBP,1600,1067,47054,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.841,-0.0002
+04_c2pa,img001.jpg,screenshot,PNG,1600,1067,870549,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8495,-0.0002
+04_c2pa,img002.jpg,jpeg_q50,JPEG,1600,1067,69620,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8407,0.0007
+04_c2pa,img002.jpg,jpeg_q75,JPEG,1600,1067,91529,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8502,0.0007
+04_c2pa,img002.jpg,resample_1080,JPEG,1080,720,124271,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8268,0.0004
+04_c2pa,img002.jpg,crop_5,JPEG,1440,961,156681,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8631,-0.0026
+04_c2pa,img002.jpg,format_png,PNG,1600,1067,864144,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8619,0.0007
+04_c2pa,img002.jpg,format_jpeg,JPEG,1600,1067,140628,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8573,0.0007
+04_c2pa,img002.jpg,format_webp,WEBP,1600,1067,48206,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8535,0.0008
+04_c2pa,img002.jpg,screenshot,PNG,1600,1067,864144,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8619,0.0007
+04_c2pa,img003.jpg,jpeg_q50,JPEG,1600,1067,69969,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8386,-0.0031
+04_c2pa,img003.jpg,jpeg_q75,JPEG,1600,1067,91921,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8481,-0.0033
+04_c2pa,img003.jpg,resample_1080,JPEG,1080,720,123700,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8236,-0.0036
+04_c2pa,img003.jpg,crop_5,JPEG,1440,961,158086,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8524,-0.0038
+04_c2pa,img003.jpg,format_png,PNG,1600,1067,870223,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8594,-0.0033
+04_c2pa,img003.jpg,format_jpeg,JPEG,1600,1067,140437,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8551,-0.0033
+04_c2pa,img003.jpg,format_webp,WEBP,1600,1067,48654,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8511,-0.0032
+04_c2pa,img003.jpg,screenshot,PNG,1600,1067,870223,no aplica,no aplica,no aplica,no aplica,no sobrevive,True,False,no aplica,sobrevive,0.8594,-0.0033

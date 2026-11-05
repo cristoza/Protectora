@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, CircleNotch, DownloadSimple, PenNib } from '@phosphor-icons/react'
 import CheckCard from './CheckCard.jsx'
 import { EASE } from '../lib/motion.js'
+import SaveImageButton from './SaveImageButton.jsx'
 
 const YEAR = new Date().getFullYear()
 
@@ -54,7 +55,9 @@ export default function MetadataSigner({ file, filename, identity, setIdentity, 
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(errorText(data, res.status))
       setResult({ file, data })
-      onSigned?.(data.audit)
+      // El archivo firmado pasa a ser el vigente: el asistente de publicación lo analiza a él.
+      const blob = await (await fetch(data.image)).blob()
+      onSigned?.(data.audit, new File([blob], data.filename, { type: blob.type }))
     } catch (err) {
       if (err.name === 'AbortError') return
       setError(
@@ -194,9 +197,12 @@ export default function MetadataSigner({ file, filename, identity, setIdentity, 
                 </ul>
               )}
             </div>
-            <a href={signed.image} download={signed.filename} className="btn btn-primary">
-              <DownloadSimple size={18} weight="bold" aria-hidden="true" /> Descargar {signed.filename}
-            </a>
+            <div className="flex flex-col gap-2">
+              <a href={signed.image} download={signed.filename} className="btn btn-primary">
+                <DownloadSimple size={18} weight="bold" aria-hidden="true" /> Descargar {signed.filename}
+              </a>
+              <SaveImageButton source={signed.image} filename={signed.filename} kind="firmada" />
+            </div>
           </div>
         </motion.div>
       )}

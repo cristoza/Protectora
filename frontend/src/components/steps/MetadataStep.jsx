@@ -2,12 +2,14 @@ import StepFrame from '../StepFrame.jsx'
 import AuditDropzone from '../AuditDropzone.jsx'
 import DiagnosticPanel from '../DiagnosticPanel.jsx'
 import MetadataSigner from '../MetadataSigner.jsx'
-import { STEPS } from '../../data/layers.js'
+import SaveImageButton from '../SaveImageButton.jsx'
+import { stepById } from '../../data/layers.js'
 
 export default function MetadataStep({ audit, source, onResult, onSigned, identity, setIdentity }) {
   return (
-    <StepFrame step={STEPS[1]}>
+    <StepFrame step={stepById('metadatos')}>
       <AuditDropzone onResult={onResult} hasResult={Boolean(audit)} />
+      {source && <SaveImageButton source={source.file} filename={source.file.name} kind="original" className="mt-3 max-w-xs" />}
       {audit && <DiagnosticPanel result={audit} />}
       {source && (
         <div className="mt-12">

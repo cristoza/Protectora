@@ -1,0 +1,532 @@
+{
+  "_estado": "PROPUESTA INICIAL PENDIENTE DE VALIDACIÓN ACADÉMICA. No aplicar con participantes hasta la revisión de la tutoría y de personas expertas, la prueba piloto y el análisis de ítems.",
+  "_formato": "Las preguntas siguen el esquema de frontend/src/data/comprehension.json (id, question, options [{id, text}], correct) con dos campos añadidos: objective (código de docs/addie/02_diseno.md) y feedback (explicación que se muestra al terminar). Cada ítem Dnn tiene su paralelo Fnn en evaluacion_final.json.",
+  "instrument": "diagnostico_inicial",
+  "form": "A",
+  "version": "0.1.0",
+  "date": "2026-11-05",
+  "validated": false,
+  "privacy": "Anónimo. Se usa el mismo código aleatorio generado en el navegador que la evaluación final. No se recogen nombres, correos, IP, navegador ni imágenes. El perfil es opcional.",
+  "instructions": "Responde con lo que sabes ahora, sin buscar. No pasa nada si no sabes una respuesta: sirve para adaptar el recorrido y no tiene calificación.",
+  "questions": [
+    {
+      "id": "D01",
+      "objective": "SCR-1",
+      "question": "Una ilustración está publicada en un portafolio que se puede ver sin iniciar sesión. ¿Qué afirmación es más precisa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ningún programa automático puede descargarla salvo que su autora lo permita"
+        },
+        {
+          "id": "b",
+          "text": "Programas automáticos pueden descargarla y puede acabar en colecciones usadas para entrenar IA"
+        },
+        {
+          "id": "c",
+          "text": "Solo se puede usar si tiene marca de agua"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Los programas de scraping recorren la web y descargan lo que es accesible públicamente, sin pedir permiso. Que una imagen se vea sin iniciar sesión es la condición que lo hace posible."
+    },
+    {
+      "id": "D02",
+      "objective": "ENT-1",
+      "question": "En términos generales, ¿cómo aprende un generador de imágenes?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ajusta sus parámetros a partir de regularidades de muchas imágenes con sus descripciones"
+        },
+        {
+          "id": "b",
+          "text": "Guarda una copia de cada imagen y las pega al generar"
+        },
+        {
+          "id": "c",
+          "text": "Busca imágenes en internet cada vez que genera una"
+        }
+      ],
+      "correct": "a",
+      "feedback": "El entrenamiento ajusta el modelo con patrones de grandes colecciones de imágenes y textos. No funciona como un archivo de copias, aunque se ha documentado que algunos modelos pueden reproducir casi idénticas algunas imágenes de entrenamiento."
+    },
+    {
+      "id": "D03",
+      "objective": "ENT-2",
+      "question": "Además de entrenar un modelo general, ¿de qué otra forma pueden usarse unas pocas obras de una misma persona?",
+      "options": [
+        {
+          "id": "a",
+          "text": "No pueden usarse: hacen falta millones de imágenes"
+        },
+        {
+          "id": "b",
+          "text": "Solo para clasificar imágenes por tema"
+        },
+        {
+          "id": "c",
+          "text": "Para ajustar un modelo existente e imitar su estilo"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Con unas decenas de obras se puede ajustar un modelo ya entrenado para que imite un estilo concreto. Ese es el riesgo principal frente al que se diseñan herramientas de cloaking como Glaze."
+    },
+    {
+      "id": "D04",
+      "objective": "MET-1",
+      "question": "¿Dónde puede guardarse el nombre de quien hizo una imagen dentro del propio archivo?",
+      "options": [
+        {
+          "id": "a",
+          "text": "En los metadatos, por ejemplo EXIF, XMP o IPTC"
+        },
+        {
+          "id": "b",
+          "text": "En los colores de los píxeles"
+        },
+        {
+          "id": "c",
+          "text": "Solo en el nombre del archivo"
+        }
+      ],
+      "correct": "a",
+      "feedback": "EXIF, XMP e IPTC son bloques de metadatos dentro del archivo. Pueden guardar autor, copyright y otras declaraciones sin cambiar la imagen."
+    },
+    {
+      "id": "D05",
+      "objective": "MET-4",
+      "question": "Una imagen declara autor y copyright en sus metadatos. Si un programa intenta descargarla, ¿qué ocurre?",
+      "options": [
+        {
+          "id": "a",
+          "text": "La descarga se bloquea"
+        },
+        {
+          "id": "b",
+          "text": "Se descarga igual: los metadatos informan, pero no bloquean"
+        },
+        {
+          "id": "c",
+          "text": "Solo se descarga si el programa tiene permiso del autor"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Los metadatos son una declaración. Dejan constancia de la autoría y pueden servir para reclamar, pero no impiden técnicamente la descarga ni el uso."
+    },
+    {
+      "id": "D06",
+      "objective": "MET-3",
+      "question": "Antes de publicar una foto hecha con el móvil, ¿qué dato de los metadatos conviene revisar por privacidad?",
+      "options": [
+        {
+          "id": "a",
+          "text": "El perfil de color"
+        },
+        {
+          "id": "b",
+          "text": "Las dimensiones en píxeles"
+        },
+        {
+          "id": "c",
+          "text": "La ubicación GPS"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Muchas cámaras y móviles guardan dónde se tomó la foto. Publicarla con ese dato puede revelar tu casa o tu taller."
+    },
+    {
+      "id": "D07",
+      "objective": "MET-4",
+      "question": "En Escudo Visual, una imagen obtiene 30 sobre 100. ¿Qué significa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que tiene un 30 % de probabilidad de usarse para entrenar IA"
+        },
+        {
+          "id": "b",
+          "text": "Que el archivo tiene 30 errores"
+        },
+        {
+          "id": "c",
+          "text": "Que declara varias señales de autoría o exclusión; el número resume las señales encontradas, no es una probabilidad"
+        }
+      ],
+      "correct": "c",
+      "feedback": "El puntaje parte de 100 y resta puntos por cada señal encontrada (autoría, copyright, exclusión de IA, derechos en XMP o IPTC). Mide lo que el archivo declara, no la probabilidad real de que se recopile o se use."
+    },
+    {
+      "id": "D08",
+      "objective": "EXC-1",
+      "question": "¿Cuál de estos campos es una señal de exclusión de minería de datos o de entrenamiento?",
+      "options": [
+        {
+          "id": "a",
+          "text": "TDMRep tdm:reservation"
+        },
+        {
+          "id": "b",
+          "text": "La sensibilidad ISO de EXIF"
+        },
+        {
+          "id": "c",
+          "text": "El perfil de color ICC"
+        }
+      ],
+      "correct": "a",
+      "feedback": "TDMRep, el campo Data Mining de IPTC y las palabras noai y noimageai expresan que no se autoriza la minería de datos o el entrenamiento. ISO e ICC son datos técnicos."
+    },
+    {
+      "id": "D09",
+      "objective": "EXC-1",
+      "question": "Si una imagen lleva la etiqueta noimageai, ¿qué pasa cuando alguien la recopila?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ningún sistema podrá usarla"
+        },
+        {
+          "id": "b",
+          "text": "Quien la recopila puede respetarla o ignorarla"
+        },
+        {
+          "id": "c",
+          "text": "El archivo se borra al descargarse"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Las etiquetas de exclusión son una petición. Funcionan si quien descarga o filtra las imágenes decide consultarlas y respetarlas."
+    },
+    {
+      "id": "D10",
+      "objective": "PER-1",
+      "question": "¿En qué consiste una perturbación adversarial aplicada a una imagen?",
+      "options": [
+        {
+          "id": "a",
+          "text": "En un desenfoque fuerte que estropea la imagen"
+        },
+        {
+          "id": "b",
+          "text": "En una firma digital del autor"
+        },
+        {
+          "id": "c",
+          "text": "En cambios casi invisibles para una persona, calculados para alterar lo que un modelo extrae de ella"
+        }
+      ],
+      "correct": "c",
+      "feedback": "La perturbación cambia muy poco los píxeles para el ojo humano, pero de forma calculada para que un modelo concreto interprete la imagen de otra manera."
+    },
+    {
+      "id": "D11",
+      "objective": "PER-3",
+      "question": "Una perturbación se calculó contra un modelo concreto. ¿Qué afirmación es más precisa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Puede perder efecto ante otro modelo o tras transformaciones como la compresión"
+        },
+        {
+          "id": "b",
+          "text": "Protege igual frente a cualquier modelo actual y futuro"
+        },
+        {
+          "id": "c",
+          "text": "Impide que la imagen se descargue"
+        }
+      ],
+      "correct": "a",
+      "feedback": "Su eficacia depende del modelo para el que se calculó. Modelos distintos, filtros o recompresión pueden reducirla, y hay estudios que muestran que puede eludirse."
+    },
+    {
+      "id": "D12",
+      "objective": "PER-2",
+      "question": "¿Qué diferencia hay entre el cloaking (como Glaze) y el envenenamiento (como Nightshade)?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Son dos nombres para lo mismo"
+        },
+        {
+          "id": "b",
+          "text": "El cloaking busca que el modelo no aprenda bien tu estilo; el envenenamiento busca enseñarle asociaciones falsas"
+        },
+        {
+          "id": "c",
+          "text": "El envenenamiento borra la imagen de los servidores"
+        }
+      ],
+      "correct": "b",
+      "feedback": "El cloaking defiende tu obra frente a la imitación. El envenenamiento intenta además degradar lo que aprende el modelo, por ejemplo que asocie perro con gato."
+    },
+    {
+      "id": "D13",
+      "objective": "MAR-1",
+      "question": "¿Qué consigue una marca de agua visible sobre una obra?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Impide que un modelo entrene con la imagen"
+        },
+        {
+          "id": "b",
+          "text": "Hace que la imagen sea invisible para los programas"
+        },
+        {
+          "id": "c",
+          "text": "Señala la autoría, pero un modelo puede aprender la imagen con la marca y las herramientas de relleno pueden borrarla"
+        }
+      ],
+      "correct": "c",
+      "feedback": "La marca visible ayuda a reclamar la autoría y suele sobrevivir a la compresión. No impide el entrenamiento y se puede eliminar con edición."
+    },
+    {
+      "id": "D14",
+      "objective": "C2P-1",
+      "question": "¿Qué demuestra una credencial C2PA válida en una imagen?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que un firmante identificado declaró su origen y ediciones, y que el archivo no cambió desde la firma"
+        },
+        {
+          "id": "b",
+          "text": "Que lo que muestra la imagen es verdad"
+        },
+        {
+          "id": "c",
+          "text": "Que nadie puede copiarla"
+        }
+      ],
+      "correct": "a",
+      "feedback": "C2PA registra de forma firmada la procedencia. Su valor depende de confiar en quien firma; no prueba que la escena sea real ni impide copias."
+    },
+    {
+      "id": "D15",
+      "objective": "COM-1",
+      "question": "Subes una imagen a una plataforma que la reduce y la vuelve a guardar en JPEG. ¿Qué suele pasar?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Se conservan siempre todos los metadatos"
+        },
+        {
+          "id": "b",
+          "text": "Muchas plataformas borran metadatos, la credencial C2PA puede perderse y una perturbación puede atenuarse"
+        },
+        {
+          "id": "c",
+          "text": "La imagen gana calidad"
+        }
+      ],
+      "correct": "b",
+      "feedback": "La recompresión y el reescalado reescriben el archivo. Es frecuente que se pierdan metadatos y credenciales incrustadas y que se suavicen los detalles finos."
+    },
+    {
+      "id": "D16",
+      "objective": "PUB-1",
+      "question": "¿Cómo puedes saber qué protecciones siguen en tu imagen después de publicarla?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Confiando en lo que diga la plataforma"
+        },
+        {
+          "id": "b",
+          "text": "Mirando la miniatura"
+        },
+        {
+          "id": "c",
+          "text": "Descargando la versión publicada y auditándola de nuevo"
+        }
+      ],
+      "correct": "c",
+      "feedback": "La única forma de comprobarlo es auditar el archivo que realmente sirve la plataforma, no el original."
+    },
+    {
+      "id": "D17",
+      "objective": "PUB-2",
+      "question": "¿Por qué se recomienda combinar varias capas de protección?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque cada mecanismo cubre un riesgo distinto y ninguno basta solo"
+        },
+        {
+          "id": "b",
+          "text": "Porque con dos capas la protección es total"
+        },
+        {
+          "id": "c",
+          "text": "Porque las plataformas lo exigen"
+        }
+      ],
+      "correct": "a",
+      "feedback": "Metadatos, exclusión, perturbación y decisiones de publicación cubren momentos y riesgos distintos. Combinarlos reduce la exposición, pero ninguna combinación garantiza que la imagen no se use."
+    },
+    {
+      "id": "D18",
+      "objective": "SCR-2",
+      "question": "¿En qué momento puede tener efecto una etiqueta noai?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cuando el modelo ya generó una imagen"
+        },
+        {
+          "id": "b",
+          "text": "Cuando alguien recopila o filtra imágenes y decide consultar la etiqueta"
+        },
+        {
+          "id": "c",
+          "text": "Mientras la persona dibuja la obra"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Las señales de exclusión actúan en la recopilación o en el filtrado de las colecciones, y solo si quien lo hace las consulta. Después, ya no influyen."
+    }
+  ],
+  "self_efficacy": {
+    "_nota": "Escala ad hoc, no validada. Se repite igual en la evaluación final. Análisis descriptivo y de calibración frente a los aciertos.",
+    "scale": [
+      {
+        "value": 1,
+        "label": "Totalmente en desacuerdo"
+      },
+      {
+        "value": 2,
+        "label": "En desacuerdo"
+      },
+      {
+        "value": 3,
+        "label": "Ni de acuerdo ni en desacuerdo"
+      },
+      {
+        "value": 4,
+        "label": "De acuerdo"
+      },
+      {
+        "value": 5,
+        "label": "Totalmente de acuerdo"
+      }
+    ],
+    "items": [
+      {
+        "id": "AE1",
+        "text": "Puedo explicar a otra persona qué es el scraping de imágenes."
+      },
+      {
+        "id": "AE2",
+        "text": "Sé comprobar qué datos de autoría tiene un archivo de imagen."
+      },
+      {
+        "id": "AE3",
+        "text": "Sé añadir a una imagen una señal de que no quiero que se use para entrenar IA."
+      },
+      {
+        "id": "AE4",
+        "text": "Puedo explicar qué protege y qué no protege una perturbación como Glaze."
+      },
+      {
+        "id": "AE5",
+        "text": "Sé comprobar qué protecciones siguen en mi imagen después de publicarla."
+      }
+    ]
+  },
+  "profile": {
+    "_nota": "Opcional y categórico. Categorías amplias para evitar reidentificación. No se pregunta edad, ubicación, institución ni ningún dato de contacto.",
+    "items": [
+      {
+        "id": "P1",
+        "question": "¿Cuál describe mejor tu práctica principal?",
+        "multiple": false,
+        "options": [
+          {
+            "id": "ilustracion",
+            "text": "Ilustración o arte digital"
+          },
+          {
+            "id": "fotografia",
+            "text": "Fotografía"
+          },
+          {
+            "id": "diseno",
+            "text": "Diseño gráfico o comunicación visual"
+          },
+          {
+            "id": "otra",
+            "text": "Otra"
+          },
+          {
+            "id": "nd",
+            "text": "Prefiero no decirlo"
+          }
+        ]
+      },
+      {
+        "id": "P2",
+        "question": "¿Con qué frecuencia publicas tus imágenes en internet?",
+        "multiple": false,
+        "options": [
+          {
+            "id": "semanal",
+            "text": "Cada semana o más"
+          },
+          {
+            "id": "mensual",
+            "text": "Algunas veces al mes"
+          },
+          {
+            "id": "ocasional",
+            "text": "De vez en cuando"
+          },
+          {
+            "id": "nunca",
+            "text": "Todavía no publico"
+          },
+          {
+            "id": "nd",
+            "text": "Prefiero no decirlo"
+          }
+        ]
+      },
+      {
+        "id": "P3",
+        "question": "¿Has usado alguna de estas protecciones? Marca todas las que correspondan.",
+        "multiple": true,
+        "options": [
+          {
+            "id": "metadatos",
+            "text": "Autor o copyright en los metadatos"
+          },
+          {
+            "id": "noai",
+            "text": "Etiquetas noai o similares"
+          },
+          {
+            "id": "marca",
+            "text": "Marca de agua"
+          },
+          {
+            "id": "perturbacion",
+            "text": "Glaze, Nightshade, Mist u otra perturbación"
+          },
+          {
+            "id": "c2pa",
+            "text": "Credenciales de contenido (C2PA)"
+          },
+          {
+            "id": "ninguna",
+            "text": "Ninguna"
+          },
+          {
+            "id": "nose",
+            "text": "No lo sé"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ArrowDown, ArrowRight } from '@phosphor-icons/react'
 import { LAYER_STEPS } from '../data/layers.js'
 import { EASE, useStagger } from '../lib/motion.js'
+import StepObjectives from './StepObjectives.jsx'
 
 // Cabecera común de cada capa: banner de color con el número de capa, título, bajada
 // y el bloque "viene de / lleva a" que la conecta con sus vecinas. Todo entra en cascada.
@@ -66,7 +67,11 @@ export default function StepFrame({ step, children }) {
         </div>
       </motion.div>
 
-      <motion.div {...item} className="mt-12">
+      <motion.div {...item} className="mt-8">
+        <StepObjectives stepId={step.id} />
+      </motion.div>
+
+      <motion.div {...item} className="mt-10">
         {children}
       </motion.div>
     </motion.section>

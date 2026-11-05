@@ -4,8 +4,16 @@
 export const STEPS = [
   {
     id: 'mapa',
+    badge: 'M',
     title: 'Mapa de capas',
     short: 'Visión general',
+  },
+  {
+    id: 'aprende',
+    badge: 'A',
+    title: 'Cómo se usan tus imágenes',
+    short: 'Conceptos clave',
+    lead: 'Antes de proteger tu obra conviene saber cómo la recogen los modelos y qué puede hacer cada protección. Son siete ideas cortas.',
   },
   {
     id: 'metadatos',
@@ -45,6 +53,7 @@ export const STEPS = [
   },
   {
     id: 'resumen',
+    badge: 'R',
     title: 'Resumen',
     short: 'Estado de tus capas',
   },
@@ -52,15 +61,10 @@ export const STEPS = [
 
 export const LAYER_STEPS = STEPS.filter((s) => s.layer)
 
-export const PUBLISH_CHECKS = [
-  { id: 'terms', label: 'Leí qué dice la plataforma sobre el uso de imágenes para entrenar IA' },
-  { id: 'gps', label: 'Publico una copia sin datos de ubicación (GPS)' },
-  { id: 'original', label: 'Conservo el archivo original sin modificar' },
-  { id: 'recheck', label: 'Descargaré mi imagen publicada y la auditaré otra vez' },
-]
+export const stepById = (id) => STEPS.find((s) => s.id === id)
 
 // 'done' | 'missing' | 'pending' | null
-export function getStatus(id, { audit, perturbed, cloaked, checks }) {
+export function getStatus(id, { audit, perturbed, cloaked, checks, advice }) {
   switch (id) {
     case 'metadatos':
       if (!audit) return 'pending'
@@ -72,7 +76,9 @@ export function getStatus(id, { audit, perturbed, cloaked, checks }) {
       // Lista si se generó aquí una versión protegida o si la persona declara haber usado otra herramienta.
       return perturbed || cloaked ? 'done' : 'pending'
     case 'publicacion':
-      return PUBLISH_CHECKS.every((c) => checks[c.id]) ? 'done' : 'pending'
+      // Lista cuando la persona marca como hechas todas las recomendaciones generadas para su archivo.
+      if (!advice) return 'pending'
+      return advice.recommendations.every((r) => checks[r.id]) ? 'done' : 'pending'
     default:
       return null
   }

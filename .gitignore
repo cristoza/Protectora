@@ -18,3 +18,13 @@ skills-lock.json
 # Entorno
 .env
 .env.*
+
+# Corpus de validación y resultados (backend/scripts): no se versionan, salvo los ejemplos
+backend/corpus/
+backend/results/*
+!backend/results/example_*.csv
+backend/scripts/certs/*
+!backend/scripts/certs/README.md
+
+# Evaluaciones de participantes (SQLite): nunca se versionan
+backend/data/

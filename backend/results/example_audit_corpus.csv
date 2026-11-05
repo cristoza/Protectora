@@ -1,0 +1,13 @@
+group,file,format,width,height,author,copyright,gps,exif,xmp,iptc,noai,exclusion_tags,c2pa_present,c2pa_valid,vulnerability_score,risk_level,matches_expected
+01_sin_metadatos,img001.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,False,False,100,alto,True
+01_sin_metadatos,img002.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,False,False,100,alto,True
+01_sin_metadatos,img003.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,False,False,100,alto,True
+02_metadatos,img001.jpg,JPEG,1600,1067,True,True,False,True,True,True,False,,False,False,40,medio,True
+02_metadatos,img002.jpg,JPEG,1600,1067,True,True,False,True,True,True,False,,False,False,40,medio,True
+02_metadatos,img003.jpg,JPEG,1600,1067,True,True,False,True,True,True,False,,False,False,40,medio,True
+03_noai,img001.jpg,JPEG,1600,1067,True,True,False,True,True,True,True,dmi-prohibited-aimltraining|tdm-reservation|noai|noimageai,False,False,0,bajo,True
+03_noai,img002.jpg,JPEG,1600,1067,True,True,False,True,True,True,True,dmi-prohibited-aimltraining|tdm-reservation|noai|noimageai,False,False,0,bajo,True
+03_noai,img003.jpg,JPEG,1600,1067,True,True,False,True,True,True,True,dmi-prohibited-aimltraining|tdm-reservation|noai|noimageai,False,False,0,bajo,True
+04_c2pa,img001.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,True,True,100,alto,True
+04_c2pa,img002.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,True,True,100,alto,True
+04_c2pa,img003.jpg,JPEG,1600,1067,False,False,False,False,False,False,False,,True,True,100,alto,True

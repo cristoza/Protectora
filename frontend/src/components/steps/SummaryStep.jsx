@@ -2,6 +2,8 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, CheckCircle, Circle, WarningCircle } from '@phosphor-icons/react'
 import { EASE, useStagger } from '../../lib/motion.js'
 import { LAYER_STEPS, STATUS_LABEL, getStatus } from '../../data/layers.js'
+import { areaResults } from '../../data/addie.js'
+import StepObjectives from '../StepObjectives.jsx'
 
 const ICON = {
   done: <CheckCircle size={22} weight="fill" className="text-risk-low" aria-hidden="true" />,
@@ -9,7 +11,7 @@ const ICON = {
   pending: <Circle size={22} className="text-muted" aria-hidden="true" />,
 }
 
-export default function SummaryStep({ state, goTo }) {
+export default function SummaryStep({ state, goTo, onEvaluate, onPedagogy, knowledge, onKnowledge }) {
   const statuses = LAYER_STEPS.map((s) => getStatus(s.id, state))
   const done = statuses.filter((s) => s === 'done').length
   const reduce = useReducedMotion()
@@ -70,6 +72,55 @@ export default function SummaryStep({ state, goTo }) {
       <motion.p {...item} className="mt-8 max-w-[60ch] text-sm leading-relaxed text-muted">
         Las capas 1 y 2 salen de tu archivo. Las capas 3 y 4 las marcas tú. Ningún conjunto de capas garantiza que una imagen no se use.
       </motion.p>
+      <motion.div {...item} className="card mt-8 max-w-2xl p-6">
+        {knowledge.final ? (
+          <>
+            <h3 className="text-lg font-semibold">Qué aprendiste</h3>
+            <p className="num mt-1 text-sm text-muted">
+              {knowledge.final.correct} de {knowledge.final.total} respuestas correctas en la evaluación final
+              {knowledge.final.comparison ? `, frente a un ${knowledge.final.comparison.pre_score} % en el diagnóstico.` : '.'}
+            </p>
+            <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+              {areaResults(knowledge.final.by_objective).map((a) => (
+                <li key={a.code} className="flex items-center gap-2">
+                  {a.correct === a.total
+                    ? <CheckCircle size={18} weight="fill" className="shrink-0 text-risk-low" aria-hidden="true" />
+                    : <WarningCircle size={18} weight="fill" className="shrink-0 text-risk-mid" aria-hidden="true" />}
+                  <span>{a.name} <span className="num text-muted">({a.correct}/{a.total})</span></span>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="btn btn-outline mt-4" onClick={onKnowledge}>
+              Revisar mis respuestas <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="text-lg font-semibold">Comprueba lo que aprendiste</h3>
+            <p className="mt-1 text-sm text-muted">
+              Evaluación final anónima de unos 8 minutos, con la explicación de cada respuesta.
+              {knowledge.diagnostico ? ' Como hiciste el diagnóstico, verás cuánto avanzaste.' : ''}
+            </p>
+            <button type="button" className="btn btn-primary mt-4" onClick={onKnowledge}>
+              Hacer la evaluación final <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </>
+        )}
+      </motion.div>
+      <motion.div {...item} className="card mt-4 max-w-2xl p-6">
+        <h3 className="text-lg font-semibold">¿Nos ayudas a mejorar?</h3>
+        <p className="mt-1 text-sm text-muted">Una evaluación anónima de 5 minutos sobre la facilidad de uso y lo que aprendiste.</p>
+        <button type="button" className="btn btn-primary mt-4" onClick={onEvaluate}>
+          Participar en la evaluación <ArrowRight size={16} aria-hidden="true" />
+        </button>
+      </motion.div>
+      <motion.div {...item} className="mt-8">
+        <StepObjectives stepId="resumen" />
+        <button type="button" className="btn btn-quiet group mt-3 px-0" onClick={onPedagogy}>
+          Ver cómo está pensada la guía (modelo ADDIE)
+          <ArrowRight size={14} aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1" />
+        </button>
+      </motion.div>
     </motion.section>
   )
 }

@@ -1,24 +1,29 @@
 import StepFrame from '../StepFrame.jsx'
-import CompareSlider from '../CompareSlider.jsx'
 import ProtectionLab from '../ProtectionLab.jsx'
 import StressSimulator from '../StressSimulator.jsx'
+import ResistanceTable from '../ResistanceTable.jsx'
 import { SealCheck } from '@phosphor-icons/react'
 import CheckCard from '../CheckCard.jsx'
-import { STEPS } from '../../data/layers.js'
+import { stepById } from '../../data/layers.js'
 
-export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onProtected, onSigned, identity, setIdentity }) {
+export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onProtected, onSigned, identity, setIdentity, protection, setProtection, stress, setStress }) {
   return (
-    <StepFrame step={STEPS[3]}>
-      <CompareSlider />
-      <p className="mt-6 max-w-[60ch] text-muted">
+    <StepFrame step={stepById('perturbacion')}>
+      <p className="max-w-[60ch] text-muted">
         Para una persona la obra se ve casi igual. Para un modelo, lo que aprende de ella puede quedar distorsionado.
         No es una garantía: su eficacia cambia con la herramienta y con los modelos que intenten entrenar.
       </p>
       <div className="mt-10">
-        <ProtectionLab onProtected={onProtected} onSigned={onSigned} identity={identity} setIdentity={setIdentity} />
+        <ProtectionLab
+          onProtected={onProtected} onSigned={onSigned} identity={identity} setIdentity={setIdentity}
+          protection={protection} setProtection={setProtection}
+        />
       </div>
       <div className="mt-10">
-        <StressSimulator />
+        <StressSimulator settings={stress} setSettings={setStress} />
+      </div>
+      <div className="mt-10">
+        <ResistanceTable />
       </div>
       <div className="mt-8 grid max-w-xl gap-3">
         {cloaked && (

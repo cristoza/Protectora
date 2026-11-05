@@ -1,0 +1,52 @@
+{
+  "original": {
+    "image": "/examples/original.png",
+    "model_view": "/examples/original_model.jpg"
+  },
+  "cloak": {
+    "image": "/examples/cloak.png",
+    "model_view": "/examples/cloak_model.jpg",
+    "difference": "/examples/cloak_diff.jpg",
+    "psnr": 35.39,
+    "human_similarity": 0.8851,
+    "model_similarity": 0.8297,
+    "model_similarity_jpeg": 0.8304
+  },
+  "watermark": {
+    "image": "/examples/watermark.png",
+    "model_view": "/examples/watermark_model.jpg",
+    "difference": "/examples/watermark_diff.jpg",
+    "psnr": 24.27,
+    "human_similarity": 0.8194,
+    "model_similarity": 0.7828,
+    "model_similarity_jpeg": 0.7751
+  },
+  "settings": {
+    "strength": "media",
+    "epsilon": 8,
+    "steps": 30,
+    "jpeg_quality": 75,
+    "work_size": [
+      512,
+      344
+    ],
+    "output_size": [
+      1200,
+      800
+    ],
+    "device": "mps",
+    "seconds": 29.5
+  },
+  "mark": {
+    "text": "© Escudo Visual",
+    "opacity": 35
+  },
+  "stressed": {
+    "image": "/examples/stressed.jpg",
+    "quality": 60,
+    "scale": 0.5,
+    "passes": 1,
+    "source": "cloak"
+  },
+  "source": "Ilustración sintética generada por scripts/generate_examples.py (sin derechos de terceros)."
+}
