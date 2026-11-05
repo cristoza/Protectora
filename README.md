@@ -11,6 +11,8 @@ La aplicación organiza la protección en cuatro capas:
 
 El flujo empieza con un mapa de capas y termina con un resumen del estado de cada una.
 
+La cabecera alterna tres secciones: **Aprendizaje** (el recorrido guiado), **Laboratorio** (las mismas herramientas sin pasos, con su propio estado) y **Proyectos** (trabajos del Laboratorio guardados con nombre). Las cuentas son opcionales: sin sesión la aplicación funciona igual y no guarda nada; con sesión se puede guardar el progreso del recorrido, proyectos del Laboratorio y las imágenes que la persona elija.
+
 ---
 
 ## Tabla de contenido
@@ -19,6 +21,7 @@ El flujo empieza con un mapa de capas y termina con un resumen del estado de cad
 - [Requisitos](#requisitos)
 - [Instalación y ejecución](#instalación-y-ejecución)
 - [API](#api)
+- [Cuentas opcionales](#cuentas-opcionales)
 - [Cálculo del puntaje de riesgo](#cálculo-del-puntaje-de-riesgo)
 - [Corpus de validación](#corpus-de-validación)
 - [Evaluación de usabilidad y comprensión](#evaluación-de-usabilidad-y-comprensión)
@@ -45,6 +48,8 @@ Proyecto_grado/
 │       ├── publication_advisor.py  # Asistente de Publicación Segura (evalúa publication_rules.json)
 │       ├── publication_rules.json  # Reglas de recomendación, editables sin tocar código
 │       ├── evaluations.py       # Evaluaciones SUS y de comprensión en SQLite
+│       ├── db.py                # Conexión a PostgreSQL y esquema (cuentas opcionales)
+│       ├── accounts.py          # Usuarios, sesiones, progreso, proyectos e imágenes guardadas
 │       ├── sus.py               # Puntuación SUS (Brooke, 1996)
 │       ├── image_protector.py   # Cloak adversarial (PGD sobre el VAE) y marca de agua
 │       ├── image_stressor.py    # Redimensionado y recompresión JPEG
@@ -61,12 +66,14 @@ Proyecto_grado/
         ├── data/literacy.js  # Textos del Módulo 1 (conceptos clave)
         ├── data/evaluation.js, data/comprehension.json  # Consentimiento, SUS y cuestionario
         ├── lib/motion.js     # Utilidades de animación
+        ├── lib/account.js    # Contextos de cuenta y sección, y llamadas a la API de cuentas
+        ├── lib/useLabProject.js  # Estado del Laboratorio y autoguardado del proyecto abierto
         └── components/       # Componentes y vistas de cada paso (steps/)
 ```
 
 | Capa | Tecnologías |
 |------|-------------|
-| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, NumPy, SQLite (estándar), pytest; PyTorch y diffusers solo con `ENABLE_LIVE_CLOAK=1` o para regenerar ejemplos; cryptography para la firma C2PA de prueba |
+| Backend | FastAPI, Uvicorn, Pillow, piexif, c2pa-python 0.8, NumPy, SQLite (estándar), PostgreSQL con psycopg 3 (cuentas opcionales), pytest; PyTorch y diffusers solo con `ENABLE_LIVE_CLOAK=1` o para regenerar ejemplos; cryptography para la firma C2PA de prueba |
 | Frontend | React 19, Vite, Tailwind CSS 4, motion, Phosphor Icons, Geist, oxlint |
 
 ---
@@ -75,6 +82,7 @@ Proyecto_grado/
 
 - Python 3.9 (el entorno virtual del proyecto usa 3.9.6).
 - Node.js 20 o superior y npm.
+- Opcional, solo para las cuentas: PostgreSQL (por ejemplo `brew install postgresql@18`).
 - Solo con `ENABLE_LIVE_CLOAK=1` o para regenerar los ejemplos: conexión a internet la primera vez, porque el modelo `stabilityai/sd-vae-ft-mse` se descarga a la caché de Hugging Face.
 - Recomendado: Mac con Apple Silicon (el modelo usa MPS si está disponible) o una máquina con suficiente RAM para PyTorch.
 
@@ -99,6 +107,25 @@ El puerto debe ser **8000**, porque el proxy de Vite apunta ahí. Para verificar
 ```bash
 curl http://127.0.0.1:8000/api/health
 ```
+
+#### Cuentas (opcional)
+
+Sin PostgreSQL los endpoints de cuentas responden `503` y el resto de la aplicación funciona igual. Para activarlas:
+
+```bash
+createdb escudo_visual          # base de la aplicación
+createdb escudo_visual_test     # base de las pruebas de cuentas
+```
+
+El esquema se crea en la primera conexión.
+
+| Variable | Por defecto | Uso |
+|----------|-------------|-----|
+| `DATABASE_URL` | `postgresql:///escudo_visual` | Base de datos de las cuentas |
+| `TEST_DATABASE_URL` | `postgresql:///escudo_visual_test` | Base de `tests/test_accounts.py` (se omite si no responde) |
+| `COOKIE_SECURE` | sin definir | `1` cuando se sirve por HTTPS, para marcar la cookie como `Secure` |
+| `ENABLE_LIVE_CLOAK` | sin definir | `1` activa `/api/protect` |
+| `EVAL_EXPORT_TOKEN` | sin definir | Activa `/api/evaluations/export` |
 
 ### Frontend
 
@@ -249,6 +276,133 @@ Las reglas están en `backend/core/publication_rules.json`. Cada una tiene `id`,
 
 En el frontend, el archivo vigente (el subido en la capa 1 o su última versión firmada) se analiza cada vez que cambia. La capa 4 está lista cuando la persona marca todas las recomendaciones.
 
+## Cuentas opcionales
+
+Usuario y contraseña, sin correo. Las contraseñas se derivan con PBKDF2-SHA256 (600 000 iteraciones, biblioteca estándar; `hashlib.scrypt` no existe en el Python 3.9 de macOS). La sesión viaja en la cookie `ev_session` (`httpOnly`, `SameSite=Lax`, 30 días) y en la base solo se guarda el SHA-256 del token. Todas las consultas filtran por `user_id`, así que una cuenta nunca ve los datos de otra.
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `POST /api/auth/register` | `{username, password}`: usuario de 3 a 32 caracteres (`A-Z a-z 0-9 _ . -`, se guarda en minúsculas), contraseña de 8 a 128. `409` si el usuario ya existe. Inicia sesión |
+| `POST /api/auth/login` | Mismo cuerpo. `401` si las credenciales no coinciden |
+| `POST /api/auth/logout` | Cierra la sesión y borra la cookie |
+| `GET /api/auth/me` | Usuario de la sesión actual, `401` sin sesión |
+| `DELETE /api/auth/me` | Borra la cuenta, sus sesiones, su progreso, sus imágenes y su carpeta de archivos |
+| `GET /api/progress`, `PUT /api/progress` | Estado del recorrido de Aprendizaje (paso, casillas, datos de firma, ajustes de perturbación y de estrés, auditoría). Rechaza campos desconocidos y más de 256 KB |
+| `GET /api/projects` | Proyectos del Laboratorio, el último modificado primero, con autor, nivel de riesgo, número de imágenes y portada |
+| `POST /api/projects` | `{name, state?}`: nombre de 1 a 80 caracteres. `state` (`LabState`) guarda firma, ajustes de perturbación y de estrés y auditoría; rechaza campos desconocidos y más de 256 KB |
+| `GET /api/projects/{id}` | Proyecto con su estado y sus imágenes |
+| `PATCH /api/projects/{id}` | `{name?, state?}`: renombra, actualiza el estado o ambos |
+| `DELETE /api/projects/{id}` | Borra el proyecto, sus imágenes y los archivos de estas |
+| `GET /api/images?section=` | Imágenes guardadas, filtrables por `aprendizaje` o `laboratorio` |
+| `POST /api/images` | `file`, `section` (`aprendizaje`, `laboratorio`), `kind` (`original`, `firmada`, `perturbacion`, `marca_agua`) y, opcional, `project_id`. Guarda el archivo con su auditoría. `404` si el proyecto no es de la cuenta |
+| `GET /api/images/{id}/file` | Descarga una imagen guardada |
+| `DELETE /api/images/{id}` | Borra una imagen guardada |
+
+Los archivos van a `backend/data/uploads/<user_id>/` (no versionado) y en PostgreSQL quedan su ruta y su auditoría. Si la base no responde, cualquier `psycopg.OperationalError` se convierte en un `503` con un mensaje en español.
+
+### Modelo de datos
+
+Hay dos bases independientes y sin relación entre sí: PostgreSQL para las cuentas (`core/db.py`, cinco tablas) y SQLite para las evaluaciones anónimas (`core/evaluations.py`, una tabla). Las evaluaciones no tienen clave hacia `users` a propósito, para que sigan siendo anónimas.
+
+```mermaid
+erDiagram
+    users ||--o{ sessions : "tiene"
+    users ||--o| progress : "guarda"
+    users ||--o{ images : "guarda"
+    users ||--o{ projects : "crea"
+    projects ||--o{ images : "agrupa"
+
+    users {
+        BIGSERIAL id PK
+        TEXT username UK "minúsculas, 3 a 32"
+        TEXT password_hash "pbkdf2_sha256$iter$sal$hash"
+        TIMESTAMPTZ created_at
+    }
+    sessions {
+        BYTEA token_hash PK "SHA-256 del token de la cookie"
+        BIGINT user_id FK
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ expires_at "created_at + 30 días"
+    }
+    progress {
+        BIGINT user_id PK, FK
+        JSONB state "estado del recorrido de Aprendizaje"
+        TIMESTAMPTZ updated_at
+    }
+    projects {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        TEXT name "1 a 80 caracteres"
+        JSONB state "LabState: firma, ajustes y auditoría"
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    images {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        BIGINT project_id FK "opcional, solo Laboratorio"
+        TEXT section "aprendizaje | laboratorio"
+        TEXT kind "original | firmada | perturbacion | marca_agua"
+        TEXT filename "nombre original"
+        TEXT mime
+        INTEGER size_bytes
+        TEXT stored_name "archivo en data/uploads/<user_id>/"
+        JSONB audit "to_dict() de MetadataReader"
+        TIMESTAMPTZ created_at
+    }
+    evaluations {
+        INTEGER id PK "SQLite, sin relación con users"
+        TEXT participant_code UK "XXXX-XXXX"
+        TEXT created_on "fecha sin hora"
+        TEXT sus_items "JSON: 10 respuestas de 1 a 5"
+        REAL sus_score "0 a 100"
+        TEXT comprehension "JSON: respuesta y si es correcta"
+    }
+```
+
+| Tabla | Columna | Tipo | Restricciones |
+|-------|---------|------|---------------|
+| `users` | `id` | `BIGSERIAL` | PK |
+| | `username` | `TEXT` | `NOT NULL`, `UNIQUE` |
+| | `password_hash` | `TEXT` | `NOT NULL` |
+| | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| `sessions` | `token_hash` | `BYTEA` | PK |
+| | `user_id` | `BIGINT` | `NOT NULL`, FK `users(id)` `ON DELETE CASCADE` |
+| | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| | `expires_at` | `TIMESTAMPTZ` | `NOT NULL` |
+| `progress` | `user_id` | `BIGINT` | PK y FK `users(id)` `ON DELETE CASCADE` (relación 1 a 0..1) |
+| | `state` | `JSONB` | `NOT NULL` |
+| | `updated_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| `projects` | `id` | `BIGSERIAL` | PK |
+| | `user_id` | `BIGINT` | `NOT NULL`, FK `users(id)` `ON DELETE CASCADE` |
+| | `name` | `TEXT` | `NOT NULL` |
+| | `state` | `JSONB` | `NOT NULL` |
+| | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| | `updated_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| `images` | `id` | `BIGSERIAL` | PK |
+| | `user_id` | `BIGINT` | `NOT NULL`, FK `users(id)` `ON DELETE CASCADE` |
+| | `project_id` | `BIGINT` | FK `projects(id)` `ON DELETE CASCADE`, nulo si la imagen no pertenece a un proyecto |
+| | `section` | `TEXT` | `NOT NULL`, `CHECK IN ('aprendizaje', 'laboratorio')` |
+| | `kind` | `TEXT` | `NOT NULL`, `CHECK IN ('original', 'firmada', 'perturbacion', 'marca_agua')` |
+| | `filename` | `TEXT` | `NOT NULL` |
+| | `mime` | `TEXT` | `NOT NULL` |
+| | `size_bytes` | `INTEGER` | `NOT NULL` |
+| | `stored_name` | `TEXT` | `NOT NULL` |
+| | `audit` | `JSONB` | `NOT NULL` |
+| | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, `DEFAULT now()` |
+| `evaluations` (SQLite) | `id` | `INTEGER` | PK `AUTOINCREMENT` |
+| | `participant_code` | `TEXT` | `NOT NULL`, `UNIQUE` |
+| | `created_on` | `TEXT` | `NOT NULL` |
+| | `sus_items` | `TEXT` | `NOT NULL` |
+| | `sus_score` | `REAL` | `NOT NULL` |
+| | `comprehension` | `TEXT` | `NOT NULL` |
+
+Índices adicionales: `images_user_idx` sobre `images (user_id, created_at DESC)`, `projects_user_idx` sobre `projects (user_id, updated_at DESC)` e `images_project_idx` sobre `images (project_id)`. Todas las FK usan `ON DELETE CASCADE`, así que borrar un usuario borra sus sesiones, su progreso, sus proyectos y sus imágenes, y borrar un proyecto borra sus imágenes; `accounts.delete_user` y `accounts.delete_project` borran además los archivos. La columna `project_id` se añade con `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, así que las bases creadas antes de los proyectos se actualizan solas.
+
+En el frontend, `AccountMenu` (un `<dialog>` nativo) gestiona registro, inicio y cierre de sesión y borrado de la cuenta. Con sesión, `App.jsx` restaura el progreso al iniciar sesión y lo guarda con un retardo de 1 s. `SaveImageButton` solo aparece con sesión: junto a la imagen subida (capa 1 y Laboratorio), junto a la imagen firmada en `MetadataSigner` y en las tarjetas de `ProtectionLab` con resultados reales (no en el ejemplo precalculado). `MyImages` muestra la galería en el Laboratorio. Los proyectos se describen en [Frontend](#frontend).
+
+---
+
 ## Cálculo del puntaje de riesgo
 
 El puntaje mide la **exposición**: un valor más alto significa una imagen **más vulnerable**. Parte de 100 y resta penalizaciones por cada protección encontrada:
@@ -325,11 +479,21 @@ EVAL_EXPORT_TOKEN=un-token-largo uvicorn main:app --port 8000
 curl -H "Authorization: Bearer un-token-largo" http://127.0.0.1:8000/api/evaluations/export -o evaluaciones.csv
 ```
 
+### Evaluación de conocimientos (diagnóstico y evaluación final)
+
+Mide el aprendizaje antes y después del recorrido con los instrumentos ADDIE de `docs/addie/instrumentos/` (pendientes de validación académica; la interfaz lo avisa mientras tengan `"validated": false`). El diagnóstico se ofrece en el paso Mapa y la evaluación final en el Resumen; ambos son opcionales y anónimos. El código de participante se guarda solo en `sessionStorage`, así que une diagnóstico, evaluación final y SUS mientras la pestaña siga abierta.
+
+- `GET /api/knowledge/{diagnostico|final}`: preguntas, escala de autoeficacia y perfil opcional, **sin** respuestas correctas.
+- `POST /api/knowledge/{diagnostico|final}`: `{"participant_code", "answers": {id: opción}, "self_efficacy": {id: 1-5}, "profile": {...}}`. El servidor valida y corrige; responde `201` con aciertos, puntaje y resultado por objetivo. La final añade la explicación de cada pregunta y, si existe diagnóstico con el mismo código, `comparison` con la ganancia normalizada de Hake. `409` si el código ya respondió esa fase y `422` si falta o sobra algo.
+- `GET /api/knowledge/export`: CSV con una fila por prueba (acierto por ítem, autoeficacia, perfil y ganancia). Mismo token que la exportación de evaluaciones.
+
+Se guarda en la tabla `knowledge_tests` de `backend/data/evaluations.sqlite`: código, fase, versión del instrumento, fecha sin hora, respuestas, autoeficacia y perfil. Nunca nombres, IP, navegador ni imágenes.
+
 ---
 
 ## Pruebas
 
-Las pruebas del backend usan pytest y corren sin conexión, sin PyTorch y sin escribir fuera de carpetas temporales:
+Las pruebas del backend usan pytest y corren sin conexión, sin PyTorch y sin escribir fuera de carpetas temporales. `test_accounts.py` usa la base `escudo_visual_test` y se omite si no está disponible:
 
 ```bash
 cd backend
@@ -345,10 +509,12 @@ python -m pytest -q
 | `test_stress_suite_endpoint.py` | `/api/stress-suite` y sus parámetros |
 | `test_corpus_scripts.py` | IPTC del corpus, `build_corpus` y `run_validation` de punta a punta |
 | `test_evaluations.py` | `/api/evaluations` (solo datos anónimos, duplicados) y la exportación con token |
+| `test_knowledge.py` | Diagnóstico y evaluación final: preguntas sin claves, corrección en servidor, comparación y ganancia, validación, duplicados, datos guardados y exportación |
 | `test_live_cloak.py` | `/api/protect` desactivado por defecto y arranque sin PyTorch |
 | `test_publication_advice.py` | Cada regla del asistente, estimación de calidad JPEG y el endpoint |
 | `test_endpoints_validation.py` | 415, 413 y 422 en todos los endpoints con imagen, y contrato de `/api/audit` |
 | `test_tempfiles.py` | Ningún temporal queda en disco tras éxito, imagen inválida o error inesperado |
+| `test_accounts.py` | Registro, inicio y cierre de sesión, sesiones vencidas, contraseña no guardada en claro, progreso, proyectos y sus imágenes, imágenes, aislamiento entre cuentas y borrado de la cuenta (necesita PostgreSQL) |
 
 La fixture `no_leftover_temp` redirige los temporales de Python a una carpeta propia y falla si queda algo dentro al terminar la prueba. El frontend no tiene pruebas automatizadas; se comprueba con `npm run lint` y `npm run build`.
 
@@ -356,7 +522,7 @@ La fixture `no_leftover_temp` redirige los temporales de Python a una carpeta pr
 
 ## Frontend
 
-El frontend es un flujo guiado con siete pasos definidos en `src/data/layers.js`:
+La cabecera alterna tres secciones. **Aprendizaje** es un flujo guiado con siete pasos definidos en `src/data/layers.js`:
 
 | Paso | Contenido | Cómo se verifica |
 |------|-----------|------------------|
@@ -371,6 +537,14 @@ El frontend es un flujo guiado con siete pasos definidos en `src/data/layers.js`
 Cada capa tiene un estado `done`, `missing` o `pending`, calculado por `getStatus()`. `LayerRail`, en la cabecera fija, permite saltar a cualquier capa. `App.jsx` guarda todo el estado compartido (paso actual, auditoría, imagen perturbada, casillas y datos de firma).
 
 Al firmar una imagen, la auditoría de toda la aplicación pasa a ser la del archivo firmado. La firma está disponible en la capa 1 (sobre el archivo subido) y debajo de los resultados de `ProtectionLab` (sobre el PNG con cloak).
+
+**Laboratorio** (`components/LabView.jsx`) reúne las mismas herramientas (auditoría, firma, `ProtectionLab`, `StressSimulator` y `ResistanceTable`) sin pasos ni orden. Tiene su propio estado, así que lo que se hace ahí no cambia el progreso del recorrido. Ese estado vive en `App.jsx` mediante `lib/useLabProject.js`, por lo que se conserva al cambiar de sección. Con sesión muestra también la galería `MyImages`.
+
+**Proyectos** (`components/ProjectsView.jsx`, solo con sesión) lista los proyectos del Laboratorio agrupados por fecha (creación o último cambio), con búsqueda y orden, y una vista de detalle con sus ajustes e imágenes. Desde ahí se crean, abren, renombran y borran. El proyecto abierto (`project` en `AccountContext`) se guarda solo con un retardo de 1 s, recibe automáticamente la imagen subida en el Laboratorio y las que se guardan con `SaveImageButton`. Abrir un proyecto restaura sus ajustes y su última imagen `original`. Sin un proyecto abierto no se guarda nada del Laboratorio.
+
+### Diseño pedagógico (modelo ADDIE)
+
+El componente educativo se diseña con el modelo ADDIE; la documentación completa está en [`docs/addie/`](docs/addie/README.md). En la interfaz, `src/data/addie.js` resume esos objetivos y fases: cada paso muestra un bloque plegable "Qué aprenderás en este paso" (`StepObjectives`) y la vista "Diseño pedagógico" (`PedagogyView`), abierta desde el pie de página y el resumen, presenta las cinco fases con lo hecho y lo pendiente, la función de cada paso, los objetivos con su evaluación y lo que la guía nunca promete. No añade pasos al recorrido ni guarda datos. Los instrumentos propuestos siguen pendientes de validación académica.
 
 ### Ejemplos precalculados (Módulo 1)
 
@@ -405,11 +579,12 @@ Para agregar o reordenar pasos, se edita `src/data/layers.js`.
 
 ## Privacidad
 
-Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al terminar, incluso si ocurre un error (bloque `finally`). El servidor no guarda ninguna imagen. Esta garantía se anuncia en el pie de página de la interfaz, así que cualquier cambio en el backend debe mantenerla.
+Cada endpoint de análisis escribe la imagen en un archivo temporal y lo **borra siempre** al terminar, incluso si ocurre un error (bloque `finally`). Sin cuenta, el servidor no guarda ninguna imagen. Esta garantía se anuncia en el pie de página de la interfaz, así que cualquier cambio en el backend debe mantenerla.
 
 - La suite de resistencia escribe sus archivos intermedios en una carpeta temporal propia que también se borra en `finally`.
-- Lo único que el servidor guarda son las evaluaciones anónimas (`backend/data/evaluations.sqlite`): código aleatorio, fecha, respuestas y puntuación. Nunca imágenes, nombres, IP ni navegador.
-- La interfaz no hace llamadas a internet: los ejemplos del Módulo 1 son archivos locales. Tampoco hay cuentas, inicio de sesión ni analítica.
+- Las evaluaciones anónimas (`backend/data/evaluations.sqlite`) guardan solo código aleatorio, fecha, respuestas y puntuación. Nunca imágenes, nombres, IP ni navegador, y no se vinculan con las cuentas.
+- Con una cuenta, el servidor guarda únicamente lo que la persona pide con "Guardar en mi cuenta", el progreso del recorrido y el proyecto del Laboratorio que tenga abierto. Borrar un proyecto elimina sus imágenes; borrar la cuenta elimina todo, incluidos los archivos.
+- La interfaz no hace llamadas a internet: los ejemplos del Módulo 1 son archivos locales. No hay analítica.
 - `tests/test_tempfiles.py` comprueba la garantía en todos los endpoints que reciben imágenes, también cuando el análisis falla.
 
 ---
@@ -437,4 +612,5 @@ Cada endpoint escribe la imagen en un archivo temporal y lo **borra siempre** al
 | `ECONNREFUSED 127.0.0.1:8000` en el log de Vite | El backend no está corriendo o no usa el puerto 8000 |
 | Error de CORS | El frontend no se sirve desde `localhost:5173` |
 | `/api/protect` tarda mucho la primera vez | Se está descargando el modelo VAE |
+| "Las cuentas no están disponibles" (503) | PostgreSQL no está corriendo o no existe la base `escudo_visual` |
 | Las subidas fallan sin el servidor de Vite | `AuditDropzone` usa la ruta relativa `/api/audit`, que necesita el proxy de Vite o un despliegue en el mismo origen |

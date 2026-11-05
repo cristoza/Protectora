@@ -6,7 +6,7 @@ import { SealCheck } from '@phosphor-icons/react'
 import CheckCard from '../CheckCard.jsx'
 import { stepById } from '../../data/layers.js'
 
-export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onProtected, onSigned, identity, setIdentity }) {
+export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onProtected, onSigned, identity, setIdentity, protection, setProtection, stress, setStress }) {
   return (
     <StepFrame step={stepById('perturbacion')}>
       <p className="max-w-[60ch] text-muted">
@@ -14,10 +14,13 @@ export default function PerturbationStep({ perturbed, setPerturbed, cloaked, onP
         No es una garantía: su eficacia cambia con la herramienta y con los modelos que intenten entrenar.
       </p>
       <div className="mt-10">
-        <ProtectionLab onProtected={onProtected} onSigned={onSigned} identity={identity} setIdentity={setIdentity} />
+        <ProtectionLab
+          onProtected={onProtected} onSigned={onSigned} identity={identity} setIdentity={setIdentity}
+          protection={protection} setProtection={setProtection}
+        />
       </div>
       <div className="mt-10">
-        <StressSimulator />
+        <StressSimulator settings={stress} setSettings={setStress} />
       </div>
       <div className="mt-10">
         <ResistanceTable />

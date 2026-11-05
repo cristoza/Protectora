@@ -1,0 +1,407 @@
+{
+  "_estado": "PROPUESTA INICIAL PENDIENTE DE VALIDACIÓN ACADÉMICA. No aplicar con participantes hasta la revisión de la tutoría y de personas expertas, la prueba piloto y el análisis de ítems.",
+  "_formato": "Mismo esquema que diagnostico_inicial.json. Cada ítem Fnn es paralelo a Dnn: mismo objetivo y nivel cognitivo, distinta situación o redacción. Las 6 preguntas existentes de frontend/src/data/comprehension.json no se modifican y se referencian en existing_items.",
+  "instrument": "evaluacion_final",
+  "form": "B",
+  "version": "0.1.0",
+  "date": "2026-11-05",
+  "validated": false,
+  "privacy": "Anónimo. Mismo código aleatorio que el diagnóstico inicial, generado en el navegador. No se recogen nombres, correos, IP, navegador ni imágenes.",
+  "instructions": "Elige la respuesta que te parezca correcta. Al terminar verás la explicación de cada pregunta.",
+  "questions": [
+    {
+      "id": "F01",
+      "objective": "SCR-1",
+      "question": "Un fotógrafo publica su trabajo en una red social con perfil abierto. ¿Qué afirmación es más precisa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Solo las personas pueden ver sus fotos"
+        },
+        {
+          "id": "b",
+          "text": "Sus fotos quedan excluidas del entrenamiento de IA por defecto"
+        },
+        {
+          "id": "c",
+          "text": "Programas automáticos pueden recopilar sus fotos porque son accesibles públicamente"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Un perfil abierto es accesible sin iniciar sesión, y eso permite que rastreadores automáticos descarguen las imágenes."
+    },
+    {
+      "id": "F02",
+      "objective": "ENT-1",
+      "question": "Durante su entrenamiento, un generador de imágenes...",
+      "options": [
+        {
+          "id": "a",
+          "text": "aprende regularidades visuales y su relación con textos a partir de muchos ejemplos"
+        },
+        {
+          "id": "b",
+          "text": "solo aprende de imágenes con permiso explícito de sus autores"
+        },
+        {
+          "id": "c",
+          "text": "conecta con internet para copiar imágenes al generar"
+        }
+      ],
+      "correct": "a",
+      "feedback": "El modelo se ajusta con patrones de grandes colecciones de imágenes y descripciones. El permiso de los autores no forma parte del proceso técnico."
+    },
+    {
+      "id": "F03",
+      "objective": "ENT-2",
+      "question": "Alguien reúne 20 obras de una ilustradora y las usa para que un modelo dibuje como ella. ¿Qué está haciendo?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Comprimir las imágenes"
+        },
+        {
+          "id": "b",
+          "text": "Ajustar un modelo existente para imitar un estilo concreto"
+        },
+        {
+          "id": "c",
+          "text": "Algo imposible con tan pocas imágenes"
+        }
+      ],
+      "correct": "b",
+      "feedback": "El ajuste fino parte de un modelo ya entrenado y necesita pocas imágenes para imitar un estilo. Es el uso que el cloaking intenta dificultar."
+    },
+    {
+      "id": "F04",
+      "objective": "MET-1",
+      "question": "¿Dónde busca Escudo Visual si un archivo declara su autoría?",
+      "options": [
+        {
+          "id": "a",
+          "text": "En los colores dominantes de la imagen"
+        },
+        {
+          "id": "b",
+          "text": "En los metadatos EXIF, XMP, IPTC y texto PNG"
+        },
+        {
+          "id": "c",
+          "text": "En la dirección web donde está publicada"
+        }
+      ],
+      "correct": "b",
+      "feedback": "La auditoría lee los bloques de metadatos del archivo: EXIF, XMP, IPTC y los textos de PNG."
+    },
+    {
+      "id": "F05",
+      "objective": "MET-4",
+      "question": "Una diseñadora firma su archivo con autor y copyright. ¿Qué ha conseguido?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que el archivo quede cifrado"
+        },
+        {
+          "id": "b",
+          "text": "Que nadie pueda descargarlo"
+        },
+        {
+          "id": "c",
+          "text": "Una declaración de autoría legible por programas, que no impide la copia"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Firmar deja constancia de la autoría dentro del archivo. Es útil para reclamar, pero no bloquea la descarga ni el uso."
+    },
+    {
+      "id": "F06",
+      "objective": "MET-3",
+      "question": "Vas a publicar una foto de tu taller hecha con el móvil. ¿Qué opción de la firma conviene activar?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Eliminar la ubicación GPS"
+        },
+        {
+          "id": "b",
+          "text": "Aumentar la resolución"
+        },
+        {
+          "id": "c",
+          "text": "Cambiar el formato a BMP"
+        }
+      ],
+      "correct": "a",
+      "feedback": "La ubicación GPS puede revelar dónde trabajas o vives. Escudo Visual permite quitarla al firmar sin tocar los píxeles."
+    },
+    {
+      "id": "F07",
+      "objective": "MET-4",
+      "question": "Una imagen pasa de 100 a 0 en Escudo Visual después de firmarla con exclusión de IA. ¿Qué significa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que ahora declara autoría, copyright y exclusión; que se respeten y sobrevivan a la publicación es otra cuestión"
+        },
+        {
+          "id": "b",
+          "text": "Que ya no puede usarse para entrenar IA"
+        },
+        {
+          "id": "c",
+          "text": "Que el archivo se ha dañado"
+        }
+      ],
+      "correct": "a",
+      "feedback": "El 0 indica que el archivo trae todas las señales que mide la herramienta. No es una probabilidad: las señales pueden ignorarse o perderse al publicar."
+    },
+    {
+      "id": "F08",
+      "objective": "EXC-1",
+      "question": "¿Cuál de estos campos expresa que no se autoriza entrenar IA con la imagen?",
+      "options": [
+        {
+          "id": "a",
+          "text": "EXIF Orientation"
+        },
+        {
+          "id": "b",
+          "text": "IPTC Data Mining con el valor DMI-PROHIBITED-AIMLTRAINING"
+        },
+        {
+          "id": "c",
+          "text": "La fecha de creación"
+        }
+      ],
+      "correct": "b",
+      "feedback": "El campo Data Mining de IPTC tiene valores para prohibir la minería de datos y el entrenamiento de IA. La orientación y la fecha son datos técnicos."
+    },
+    {
+      "id": "F09",
+      "objective": "EXC-1",
+      "question": "Un rastreador que no consulta los metadatos descarga una imagen con la etiqueta noai. ¿Qué ocurre?",
+      "options": [
+        {
+          "id": "a",
+          "text": "El rastreador deja de funcionar"
+        },
+        {
+          "id": "b",
+          "text": "La imagen se autodestruye"
+        },
+        {
+          "id": "c",
+          "text": "La etiqueta no lo detiene"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Las etiquetas solo funcionan si quien recopila decide leerlas y respetarlas. No son una barrera técnica."
+    },
+    {
+      "id": "F10",
+      "objective": "PER-1",
+      "question": "En el laboratorio, una perturbación da un parecido del 97 % para la persona y del 60 % para el modelo. ¿Qué indica?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que a simple vista la imagen está muy dañada"
+        },
+        {
+          "id": "b",
+          "text": "Que para una persona casi no cambia, mientras que lo que reconstruye el modelo se aleja más del original"
+        },
+        {
+          "id": "c",
+          "text": "Que la imagen está protegida frente a cualquier modelo"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Es la idea de la perturbación: poco cambio visible y mucho cambio para el modelo. La medida de Escudo Visual se calcula contra el mismo codificador que ataca, así que no indica eficacia frente a otros modelos."
+    },
+    {
+      "id": "F11",
+      "objective": "PER-3",
+      "question": "Una imagen con perturbación se reduce a la mitad y se recomprime en JPEG al 60 %. ¿Qué es lo más probable?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que el efecto de la perturbación se atenúe, por eso conviene comprobarlo"
+        },
+        {
+          "id": "b",
+          "text": "Que el efecto aumente siempre"
+        },
+        {
+          "id": "c",
+          "text": "Que la perturbación se convierta en una marca de agua"
+        }
+      ],
+      "correct": "a",
+      "feedback": "La compresión y el reescalado suavizan los detalles finos, que es donde vive la perturbación. El simulador de estrés permite verlo."
+    },
+    {
+      "id": "F12",
+      "objective": "PER-2",
+      "question": "Una herramienta altera imágenes de gatos para que un modelo aprenda a asociarlas con la palabra perro. ¿Qué técnica aplica?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloaking de estilo"
+        },
+        {
+          "id": "b",
+          "text": "Firma C2PA"
+        },
+        {
+          "id": "c",
+          "text": "Envenenamiento"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Enseñar asociaciones falsas al modelo es envenenamiento, como Nightshade. El cloaking, como Glaze, busca que no aprenda bien el estilo."
+    },
+    {
+      "id": "F13",
+      "objective": "MAR-1",
+      "question": "Un artista pone su nombre en diagonal sobre toda su obra. ¿Qué consigue?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Facilitar que se reconozca y se reclame su autoría, sin impedir que un modelo aprenda de la obra"
+        },
+        {
+          "id": "b",
+          "text": "Impedir el entrenamiento de IA"
+        },
+        {
+          "id": "c",
+          "text": "Invalidar los metadatos del archivo"
+        }
+      ],
+      "correct": "a",
+      "feedback": "La marca visible señala autoría. Un modelo puede aprender la imagen con la marca, y las herramientas de relleno pueden borrarla."
+    },
+    {
+      "id": "F14",
+      "objective": "C2P-1",
+      "question": "Una imagen tenía credencial C2PA, pero tras subirla a una red social Escudo Visual no la encuentra. ¿Qué significa?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que la imagen es falsa"
+        },
+        {
+          "id": "b",
+          "text": "Que la credencial se perdió al transformar el archivo; eso no prueba por sí solo que el contenido sea falso"
+        },
+        {
+          "id": "c",
+          "text": "Que la imagen tiene un virus"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Las credenciales incrustadas suelen perderse al recomprimir. Su ausencia indica que no se puede verificar la procedencia, no que la imagen sea falsa."
+    },
+    {
+      "id": "F15",
+      "objective": "COM-1",
+      "question": "¿Qué proceso habitual de las plataformas elimina con más frecuencia los metadatos?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que alguien vea la imagen en pantalla"
+        },
+        {
+          "id": "b",
+          "text": "Compartir el enlace a la publicación"
+        },
+        {
+          "id": "c",
+          "text": "Volver a guardar la imagen al subirla, reduciéndola o recomprimiéndola"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Al reprocesar la imagen, muchas plataformas generan un archivo nuevo sin los metadatos originales."
+    },
+    {
+      "id": "F16",
+      "objective": "PUB-1",
+      "question": "Auditas la imagen que descargaste de tu publicación y ya no aparece tu autoría. ¿Qué conviene hacer?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nada: el original sigue firmado y eso basta"
+        },
+        {
+          "id": "b",
+          "text": "Asumir que la plataforma la borró y valorar otras medidas, como una marca visible o publicar donde se conserven los metadatos"
+        },
+        {
+          "id": "c",
+          "text": "Subir la misma imagen varias veces hasta que aparezca"
+        }
+      ],
+      "correct": "b",
+      "feedback": "Si la plataforma borra los metadatos, lo que circula no lleva tu declaración. Hay que ajustar la estrategia de publicación."
+    },
+    {
+      "id": "F17",
+      "objective": "PUB-2",
+      "question": "¿Qué combinación cubre más riesgos distintos?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Solo una marca de agua"
+        },
+        {
+          "id": "b",
+          "text": "Solo la etiqueta noai"
+        },
+        {
+          "id": "c",
+          "text": "Firma con exclusión, perturbación, lectura de los términos de la plataforma y nueva auditoría tras publicar"
+        }
+      ],
+      "correct": "c",
+      "feedback": "Cada capa cubre un momento distinto. Combinarlas reduce la exposición, aunque ninguna combinación garantiza que la imagen no se use."
+    },
+    {
+      "id": "F18",
+      "objective": "SCR-2",
+      "question": "¿En qué momento intenta actuar una perturbación adversarial?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cuando un modelo procesa la imagen para aprender de ella o editarla"
+        },
+        {
+          "id": "b",
+          "text": "Cuando alguien la descarga"
+        },
+        {
+          "id": "c",
+          "text": "Cuando se publica"
+        }
+      ],
+      "correct": "a",
+      "feedback": "La perturbación no impide descargar ni publicar. Intenta alterar lo que el modelo extrae cuando procesa la imagen."
+    }
+  ],
+  "existing_items": {
+    "_nota": "Preguntas de frontend/src/data/comprehension.json, sin cambios. Pueden aplicarse junto a la forma B mientras la tutoría decide si se integran o se sustituyen. No tienen paralelo en el diagnóstico.",
+    "source": "frontend/src/data/comprehension.json",
+    "mapping": {
+      "noai": "EXC-1",
+      "plataformas": "COM-1",
+      "puntaje": "MET-4",
+      "perturbacion": "PER-1",
+      "c2pa": "C2P-1",
+      "compresion": "COM-1, MAR-1"
+    }
+  },
+  "self_efficacy": {
+    "_nota": "Idéntica a la del diagnóstico inicial (AE1 a AE5) para comparar antes y después.",
+    "same_as": "diagnostico_inicial.json#self_efficacy"
+  }
+}

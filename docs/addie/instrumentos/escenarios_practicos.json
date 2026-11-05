@@ -1,0 +1,323 @@
+{
+  "_estado": "PROPUESTA INICIAL PENDIENTE DE VALIDACIÓN ACADÉMICA. Rúbricas y casos a revisar con la tutoría y personas expertas, y a probar en piloto antes de usarlos con participantes.",
+  "_formato": "Cada escenario: id, title, objectives, context, material (imagen de práctica; recurso N3 de docs/addie/03_desarrollo.md, aún no creado), where (sección y paso de la app), works_without_live_cloak, tasks, decisions (preguntas cerradas con el esquema de comprehension.json), evidence (lo que observa la persona facilitadora) y rubric (criterios con niveles logrado = 2, parcial = 1, no_logrado = 0).",
+  "instrument": "escenarios_practicos",
+  "version": "0.1.0",
+  "date": "2026-11-05",
+  "privacy": "La rúbrica la registra la persona facilitadora con el código anónimo de participante. No se registra texto libre, imágenes, capturas ni grabaciones. Se usan imágenes de práctica sintéticas para no pedir obra propia.",
+  "application": "Preferentemente en sesión facilitada, después del recorrido y antes de la evaluación final. Tiempo orientativo: 25 a 35 minutos para los seis escenarios. En modalidad autónoma sirven como autoevaluación sin registro.",
+  "scenarios": [
+    {
+      "id": "E1",
+      "title": "La foto del taller",
+      "objectives": ["MET-1", "MET-2", "MET-3", "EXC-2"],
+      "context": "Lucía es fotógrafa. Quiere publicar en su portafolio una foto de su taller hecha con el móvil. No sabe qué datos lleva el archivo y no quiere que se use para entrenar IA.",
+      "material": "practica_gps_sin_autor.jpg: JPEG sintético con GPS, sin autor ni copyright.",
+      "where": "Aprendizaje, paso Autoría en los metadatos (o Laboratorio)",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Audita la imagen e identifica qué falta y qué riesgo de privacidad tiene.",
+        "Fírmala con autoría, copyright y exclusión de IA, y elimina el GPS.",
+        "Comprueba en la nueva auditoría y en el paso Señales de exclusión que el resultado es el esperado."
+      ],
+      "decisions": [
+        {
+          "id": "E1_q1",
+          "question": "¿Qué problema de privacidad tiene el archivo original?",
+          "options": [
+            { "id": "a", "text": "Guarda la ubicación donde se tomó la foto" },
+            { "id": "b", "text": "Tiene un perfil de color incorrecto" },
+            { "id": "c", "text": "No tiene ninguno" }
+          ],
+          "correct": "a"
+        }
+      ],
+      "evidence": [
+        "La auditoría inicial muestra ausencia de autor y copyright y presencia de GPS.",
+        "La auditoría tras firmar muestra autor, copyright y etiquetas de exclusión, y no muestra GPS."
+      ],
+      "rubric": [
+        {
+          "criterion": "Diagnóstico (MET-1, MET-3)",
+          "logrado": "Identifica sin ayuda la falta de autoría y copyright y la presencia de GPS.",
+          "parcial": "Identifica uno de los dos problemas o necesita una pista.",
+          "no_logrado": "No identifica ninguno."
+        },
+        {
+          "criterion": "Firma y verificación (MET-2)",
+          "logrado": "Firma con autor y copyright y verifica en la nueva auditoría que aparecen.",
+          "parcial": "Firma pero no verifica, o verifica con ayuda.",
+          "no_logrado": "No consigue firmar."
+        },
+        {
+          "criterion": "Exclusión (EXC-2)",
+          "logrado": "Activa la exclusión de IA y comprueba que se detectan las etiquetas.",
+          "parcial": "Activa la exclusión pero no lo comprueba.",
+          "no_logrado": "No activa la exclusión."
+        },
+        {
+          "criterion": "Privacidad (MET-3)",
+          "logrado": "Elimina el GPS y confirma su ausencia.",
+          "parcial": "Elimina el GPS pero no lo confirma.",
+          "no_logrado": "Publicaría con GPS."
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "title": "Antes de subirla a la red social",
+      "objectives": ["COM-1", "COM-2"],
+      "context": "Andrés firmó una ilustración con autoría y exclusión. Va a subirla a una red social que reduce las imágenes y las vuelve a guardar en JPEG.",
+      "material": "practica_firmada.png: PNG sintético firmado con autoría, copyright y exclusión.",
+      "where": "Aprendizaje, paso Perturbación visual (Simulador de estrés y Suite de resistencia) o Laboratorio",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Antes de probar nada, predice qué protecciones seguirán tras una recompresión JPEG.",
+        "Ejecuta la suite de resistencia con la imagen.",
+        "Compara tu predicción con el resultado y explica las diferencias."
+      ],
+      "decisions": [
+        {
+          "id": "E2_q1",
+          "question": "Según la suite, ¿qué conviene hacer después de publicar?",
+          "options": [
+            { "id": "a", "text": "Nada, la suite ya demuestra lo que hará la plataforma" },
+            { "id": "b", "text": "Descargar la versión publicada y auditarla, porque la suite simula el mejor caso" },
+            { "id": "c", "text": "Borrar los metadatos para que no se pierdan" }
+          ],
+          "correct": "b"
+        }
+      ],
+      "evidence": [
+        "La persona registra una predicción antes de ejecutar la suite.",
+        "Interpreta correctamente sobrevive, no sobrevive y no aplica en al menos los indicadores metadata y noai.",
+        "Reconoce que la suite copia EXIF, XMP e ICC al recodificar (mejor caso) y que una plataforma real puede borrarlos."
+      ],
+      "rubric": [
+        {
+          "criterion": "Predicción (COM-1)",
+          "logrado": "Predice correctamente el comportamiento de metadatos, C2PA y marca visible.",
+          "parcial": "Acierta parte de la predicción.",
+          "no_logrado": "Predice que todo se conserva o no hace predicción."
+        },
+        {
+          "criterion": "Uso e interpretación de la suite (COM-2)",
+          "logrado": "Ejecuta la suite e interpreta los cuatro indicadores, incluido el carácter de mejor caso.",
+          "parcial": "Ejecuta la suite e interpreta algunos indicadores.",
+          "no_logrado": "No ejecuta la suite o la interpreta de forma errónea."
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "title": "La credencial que dejó de ser válida",
+      "objectives": ["C2P-1", "C2P-2"],
+      "context": "Una agencia recibe dos versiones de la misma imagen. Ambas dicen tener credenciales de contenido. Una se retocó después de firmarla.",
+      "material": "practica_c2pa_valida.jpg (firmada con el certificado de prueba del proyecto) y practica_c2pa_modificada.jpg (la misma, modificada tras firmar).",
+      "where": "Aprendizaje, paso Autoría en los metadatos (tarjeta C2PA) o Laboratorio",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Audita las dos imágenes y compara la tarjeta de credenciales.",
+        "Explica qué indica cada estado y qué no permite concluir."
+      ],
+      "decisions": [
+        {
+          "id": "E3_q1",
+          "question": "¿Qué puedes concluir de la imagen con credencial no válida?",
+          "options": [
+            { "id": "a", "text": "Que se modificó después de firmarla, sin que eso pruebe que su contenido sea falso" },
+            { "id": "b", "text": "Que es una imagen generada por IA" },
+            { "id": "c", "text": "Que su autor es otra persona" }
+          ],
+          "correct": "a"
+        },
+        {
+          "id": "E3_q2",
+          "question": "La imagen con credencial válida, ¿demuestra que la escena es real?",
+          "options": [
+            { "id": "a", "text": "Sí, C2PA certifica la veracidad del contenido" },
+            { "id": "b", "text": "No: demuestra quién declara su origen y que no cambió desde la firma; su valor depende de confiar en quien firma" }
+          ],
+          "correct": "b"
+        }
+      ],
+      "evidence": [
+        "Distingue ausente, presente y válida, presente y no válida.",
+        "Señala que el certificado de prueba no es de una entidad de confianza pública."
+      ],
+      "rubric": [
+        {
+          "criterion": "Interpretación del estado (C2P-2)",
+          "logrado": "Interpreta correctamente ambos estados y su causa probable.",
+          "parcial": "Interpreta uno de los dos estados.",
+          "no_logrado": "No distingue los estados."
+        },
+        {
+          "criterion": "Límites de C2PA (C2P-1)",
+          "logrado": "Explica que no prueba veracidad ni impide copias y que depende del firmante.",
+          "parcial": "Menciona solo uno de esos límites.",
+          "no_logrado": "Atribuye a C2PA garantías que no tiene."
+        }
+      ]
+    },
+    {
+      "id": "E4",
+      "title": "¿Marca de agua o perturbación?",
+      "objectives": ["PER-3", "MAR-2"],
+      "context": "Marta es ilustradora. Le preocupa que imiten su estilo, pero también que sus obras circulen sin su nombre. Duda entre poner una marca de agua o aplicar una perturbación.",
+      "material": "Ejemplo precalculado de ProtectionLab (o su propia comparación si el cloak en vivo está activo) y la imagen practica_firmada.png en el simulador de estrés.",
+      "where": "Aprendizaje, paso Perturbación visual",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Compara en ProtectionLab el parecido para la persona y para el modelo de cada técnica.",
+        "Prueba en el simulador cómo cambia la imagen al recomprimirla.",
+        "Recomienda a Marta qué hacer y justifica la recomendación."
+      ],
+      "decisions": [
+        {
+          "id": "E4_q1",
+          "question": "¿Qué técnica responde mejor a la preocupación por la imitación de estilo?",
+          "options": [
+            { "id": "a", "text": "La marca de agua visible" },
+            { "id": "b", "text": "La perturbación, sabiendo que no garantiza protección y puede atenuarse" },
+            { "id": "c", "text": "Ninguna de las dos tiene relación con la imitación" }
+          ],
+          "correct": "b"
+        },
+        {
+          "id": "E4_q2",
+          "question": "¿Qué técnica responde mejor a que la obra circule con su nombre?",
+          "options": [
+            { "id": "a", "text": "La marca de agua visible" },
+            { "id": "b", "text": "La perturbación" }
+          ],
+          "correct": "a"
+        }
+      ],
+      "evidence": [
+        "Interpreta los anillos SSIM de persona y modelo.",
+        "Reconoce que la medida para el modelo se calcula contra el mismo VAE que se ataca.",
+        "Propone combinar técnicas según los dos objetivos de Marta."
+      ],
+      "rubric": [
+        {
+          "criterion": "Elección justificada (MAR-2)",
+          "logrado": "Asocia cada técnica a su objetivo y propone combinarlas con justificación basada en las métricas.",
+          "parcial": "Elige correctamente para un objetivo, o sin apoyarse en las métricas.",
+          "no_logrado": "Elige sin relación con los objetivos."
+        },
+        {
+          "criterion": "Límites de la perturbación (PER-3)",
+          "logrado": "Menciona dependencia del modelo y atenuación por compresión.",
+          "parcial": "Menciona uno de los dos límites.",
+          "no_logrado": "Presenta la perturbación como protección garantizada."
+        }
+      ]
+    },
+    {
+      "id": "E5",
+      "title": "Leer bien el puntaje",
+      "objectives": ["MET-4"],
+      "context": "Un compañero audita su imagen, obtiene 0 tras firmarla y dice: ahora ya nadie puede entrenar con ella.",
+      "material": "practica_gps_sin_autor.jpg antes y después de firmarla en E1.",
+      "where": "Aprendizaje, paso Autoría en los metadatos",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Antes de firmar, predice el puntaje que tendrá la imagen firmada.",
+        "Contrasta la predicción con el desglose de puntos.",
+        "Explica al compañero qué mide el puntaje y qué no."
+      ],
+      "decisions": [
+        {
+          "id": "E5_q1",
+          "question": "¿Qué le responderías?",
+          "options": [
+            { "id": "a", "text": "Que tiene razón: 0 significa riesgo nulo" },
+            { "id": "b", "text": "Que el 0 indica que el archivo declara todas las señales que mide la herramienta, pero no que se vayan a respetar ni que sobrevivan al publicar" },
+            { "id": "c", "text": "Que el 0 indica que la imagen está dañada" }
+          ],
+          "correct": "b"
+        }
+      ],
+      "evidence": [
+        "Usa el desglose (autoría 25, copyright 25, exclusión 40, XMP o IPTC 10) para explicar el resultado.",
+        "No describe el puntaje como probabilidad."
+      ],
+      "rubric": [
+        {
+          "criterion": "Interpretación del puntaje (MET-4)",
+          "logrado": "Explica que es un índice de señales declaradas, usa el desglose y señala que no es una probabilidad.",
+          "parcial": "Explica que no es una garantía, sin relacionarlo con el desglose.",
+          "no_logrado": "Lo interpreta como probabilidad o como garantía."
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "title": "Plan de publicación",
+      "objectives": ["PUB-1", "PUB-2", "PUB-3"],
+      "context": "Sofía va a publicar una serie de obras nuevas en una plataforma que no conoce. Quiere un plan breve para antes y después de publicar.",
+      "material": "practica_firmada.png en el Asistente de Publicación Segura.",
+      "where": "Aprendizaje, pasos Dónde y cómo publicas y Resumen",
+      "works_without_live_cloak": true,
+      "tasks": [
+        "Revisa las recomendaciones del asistente para la imagen.",
+        "Ordena los pasos de un plan: antes de publicar, al publicar y después de publicar.",
+        "Indica qué revisarías en los términos de uso de la plataforma."
+      ],
+      "decisions": [
+        {
+          "id": "E6_q1",
+          "question": "¿Qué paso no debe faltar después de publicar?",
+          "options": [
+            { "id": "a", "text": "Descargar la versión publicada y auditarla" },
+            { "id": "b", "text": "Borrar el archivo original" },
+            { "id": "c", "text": "Subir la imagen en mayor resolución" }
+          ],
+          "correct": "a"
+        },
+        {
+          "id": "E6_q2",
+          "question": "En los términos de uso, ¿qué es lo más relevante revisar?",
+          "options": [
+            { "id": "a", "text": "Si la plataforma se reserva el derecho de usar el contenido para entrenar IA o de cederlo a terceros, y si ofrece una opción de exclusión" },
+            { "id": "b", "text": "El color del logotipo" },
+            { "id": "c", "text": "El número de usuarios" }
+          ],
+          "correct": "a"
+        }
+      ],
+      "evidence": [
+        "El plan incluye firma con exclusión, decisión sobre perturbación o marca, revisión de términos y nueva auditoría.",
+        "Reconoce que ninguna combinación garantiza la exclusión."
+      ],
+      "rubric": [
+        {
+          "criterion": "Plan y reauditoría (PUB-1)",
+          "logrado": "Plan ordenado que incluye la nueva auditoría tras publicar.",
+          "parcial": "Plan incompleto o sin la nueva auditoría.",
+          "no_logrado": "No elabora un plan."
+        },
+        {
+          "criterion": "Combinación de capas (PUB-2)",
+          "logrado": "Combina capas justificando qué cubre cada una y reconoce que no hay garantía.",
+          "parcial": "Combina capas sin justificar o presenta la combinación como garantía.",
+          "no_logrado": "Confía en una sola capa."
+        },
+        {
+          "criterion": "Términos de uso (PUB-3)",
+          "logrado": "Identifica qué buscar en los términos sobre IA y cesión de derechos.",
+          "parcial": "Menciona revisar los términos sin concretar qué.",
+          "no_logrado": "No considera los términos."
+        }
+      ]
+    }
+  ],
+  "scoring": {
+    "per_criterion": { "logrado": 2, "parcial": 1, "no_logrado": 0 },
+    "total_criteria": 14,
+    "max_score": 28,
+    "decisions_note": "Las preguntas cerradas (decisions) se puntúan aparte como acierto o error y sirven de apoyo a la rúbrica.",
+    "provisional_threshold": "Puntaje de aplicación igual o superior al 70 % del máximo como objetivo de diseño. Umbral a calibrar en el piloto."
+  }
+}

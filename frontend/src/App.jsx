@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowLeft, ArrowRight } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowRight, BookOpenText, Flask, FolderSimple } from '@phosphor-icons/react'
 import { EASE, SPRING } from './lib/motion.js'
 import usePublicationAdvice from './lib/usePublicationAdvice.js'
+import useLabProject from './lib/useLabProject.js'
+import {
+  AccountContext, DEFAULT_IDENTITY, DEFAULT_PROTECTION, DEFAULT_STRESS, SectionContext, loadProgress, saveProgress, useAccountState,
+} from './lib/account.js'
+import AccountMenu from './components/AccountMenu.jsx'
+import LabView from './components/LabView.jsx'
+import ProjectsView from './components/ProjectsView.jsx'
+import MyImages from './components/MyImages.jsx'
 import BrandMark from './components/BrandMark.jsx'
 import { STEPS } from './data/layers.js'
 import LayerRail from './components/LayerRail.jsx'
@@ -14,6 +22,15 @@ import PerturbationStep from './components/steps/PerturbationStep.jsx'
 import PublishStep from './components/steps/PublishStep.jsx'
 import SummaryStep from './components/steps/SummaryStep.jsx'
 import EvaluationFlow from './components/EvaluationFlow.jsx'
+import PedagogyView from './components/PedagogyView.jsx'
+import KnowledgeTest from './components/KnowledgeTest.jsx'
+import { useParticipantCode } from './lib/participant.js'
+
+const SECTIONS = [
+  { id: 'aprendizaje', label: 'Aprendizaje', icon: BookOpenText },
+  { id: 'laboratorio', label: 'Laboratorio', icon: Flask },
+  { id: 'proyectos', label: 'Proyectos', icon: FolderSimple },
+]
 
 export default function App() {
   const reduce = useReducedMotion()
@@ -26,14 +43,30 @@ export default function App() {
   // Se generó una versión con perturbación en el laboratorio de la capa 3.
   const [cloaked, setCloaked] = useState(false)
   // Datos de firma compartidos entre la capa 1 y la versión protegida de la capa 3.
-  const [identity, setIdentity] = useState({ author: '', copyright: '', aiOptOut: true, stripGps: true })
+  const [identity, setIdentity] = useState(DEFAULT_IDENTITY)
+  // Ajustes del laboratorio de perturbación y del simulador de estrés de la capa 3.
+  const [protection, setProtection] = useState(DEFAULT_PROTECTION)
+  const [stress, setStress] = useState(DEFAULT_STRESS)
   const [checks, setChecks] = useState({})
   // Archivo vigente: el subido en la capa 1 o su última versión firmada.
   const [current, setCurrent] = useState(null)
   const publication = usePublicationAdvice(current)
-  // La evaluación de usabilidad es una vista aparte del recorrido por capas.
-  const [evaluating, setEvaluating] = useState(false)
+  // Vistas aparte del recorrido por capas: 'evaluacion' (usabilidad), 'pedagogia' (diseño ADDIE),
+  // 'diagnostico' y 'final' (evaluación de conocimientos).
+  const [aside, setAside] = useState(null)
+  // Código anónimo de esta pestaña y resultados de conocimientos ya enviados; nada de esto se guarda en la cuenta.
+  const participantCode = useParticipantCode()
+  const [knowledge, setKnowledge] = useState({})
   const mounted = useRef(false)
+  // Aprendizaje es el recorrido guiado; Laboratorio, las herramientas sueltas; Proyectos, el trabajo guardado del Laboratorio.
+  const [section, setSection] = useState('aprendizaje')
+  const account = useAccountState()
+  const lab = useLabProject(account)
+  const [accountOpen, setAccountOpen] = useState(false)
+  // Sesión (objeto de usuario, nuevo en cada inicio) cuyo progreso ya se cargó: hasta entonces no se guarda,
+  // para no pisar lo guardado con el estado vacío.
+  const [progressFor, setProgressFor] = useState(null)
+  const user = account.user
 
   const state = { audit, perturbed, cloaked, checks, advice: publication.advice }
   const step = STEPS[index]
@@ -42,7 +75,8 @@ export default function App() {
     if (file) setCurrent(file)
   }
   const goTo = (target) => {
-    setEvaluating(false)
+    setAside(null)
+    setSection('aprendizaje')
     const i = typeof target === 'number' ? target : STEPS.findIndex((s) => s.id === target)
     setDir(i >= index ? 1 : -1)
     setIndex(i)
@@ -56,10 +90,40 @@ export default function App() {
     }
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
     document.getElementById('step-title')?.focus({ preventScroll: true })
-  }, [index, reduce])
+  }, [index, section, reduce])
+
+  // Con sesión, se retoma el recorrido guardado. El archivo no se guarda aquí: solo su auditoría.
+  useEffect(() => {
+    if (!user) return undefined
+    let cancelled = false
+    loadProgress()
+      .then((p) => {
+        if (cancelled || !p) return
+        setIndex(Math.min(p.index, STEPS.length - 1))
+        setPerturbed(p.perturbed)
+        setCloaked(p.cloaked)
+        setChecks(p.checks)
+        setIdentity(p.identity)
+        setProtection(p.protection ?? DEFAULT_PROTECTION)
+        setStress(p.stress ?? DEFAULT_STRESS)
+        setAudit(p.audit)
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setProgressFor(user) })
+    return () => { cancelled = true }
+  }, [user])
+
+  // Cada cambio del recorrido se guarda un segundo después, solo con sesión.
+  useEffect(() => {
+    if (!user || progressFor !== user) return undefined
+    const timer = setTimeout(() => {
+      saveProgress({ index, perturbed, cloaked, checks, identity, protection, stress, audit }).catch(() => {})
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [user, progressFor, index, perturbed, cloaked, checks, identity, protection, stress, audit])
 
   const views = {
-    mapa: <OverviewStep onStart={() => goTo(1)} onSelect={goTo} />,
+    mapa: <OverviewStep onStart={() => goTo(1)} onSelect={goTo} onDiagnostic={() => setAside('diagnostico')} diagnosticDone={Boolean(knowledge.diagnostico)} />,
     aprende: <LiteracyStep goTo={goTo} />,
     metadatos: (
       <MetadataStep
@@ -81,16 +145,32 @@ export default function App() {
         onSigned={onSigned}
         identity={identity}
         setIdentity={setIdentity}
+        protection={protection}
+        setProtection={setProtection}
+        stress={stress}
+        setStress={setStress}
       />
     ),
     publicacion: <PublishStep publication={publication} checks={checks} setChecks={setChecks} goTo={goTo} />,
-    resumen: <SummaryStep state={state} goTo={goTo} onEvaluate={() => setEvaluating(true)} />,
+    resumen: (
+      <>
+        <SummaryStep state={state} goTo={goTo} onEvaluate={() => setAside('evaluacion')} onPedagogy={() => setAside('pedagogia')}
+          knowledge={knowledge} onKnowledge={() => setAside('final')} />
+        <div className="mt-10 max-w-4xl">
+          <MyImages onLogin={() => setAccountOpen(true)} />
+        </div>
+      </>
+    ),
   }
 
   const prev = STEPS[index - 1]
   const next = STEPS[index + 1]
 
+  const learning = section === 'aprendizaje'
+
   return (
+    <AccountContext value={account}>
+    <SectionContext value={section}>
     <div className="min-h-[100dvh]">
       <div className="grain" aria-hidden="true" />
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-ctl focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
@@ -98,12 +178,29 @@ export default function App() {
       </a>
 
       <header className="sticky top-0 z-40 border-b border-line/70 bg-white/75 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
           <button type="button" onClick={() => goTo(0)} className="group flex items-center gap-2.5 rounded-ctl">
             <BrandMark progress={index / (STEPS.length - 1)} />
-            <span className="text-lg font-semibold tracking-tight">Escudo Visual</span>
+            <span className="hidden text-lg font-semibold tracking-tight sm:inline">Escudo Visual</span>
           </button>
-          <p className="num flex items-center gap-1 text-sm text-muted">
+          <nav aria-label="Secciones" className="flex gap-1 rounded-full bg-raised p-1">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                aria-current={section === s.id ? 'page' : undefined}
+                onClick={() => { setAside(null); setSection(s.id) }}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  section === s.id ? 'bg-white text-ink shadow' : 'text-muted hover:text-ink'
+                }`}
+              >
+                <s.icon size={16} weight={section === s.id ? 'fill' : 'regular'} aria-hidden="true" /> {s.label}
+              </button>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+          {learning && (
+          <p className="num hidden items-center gap-1 text-sm text-muted md:flex">
             Paso
             <span className="relative inline-flex h-5 w-4 justify-center overflow-hidden font-medium text-ink">
               <AnimatePresence mode="popLayout" initial={false} custom={dir}>
@@ -121,24 +218,47 @@ export default function App() {
             </span>
             de {STEPS.length}
           </p>
+          )}
+          <AccountMenu account={account} open={accountOpen} setOpen={setAccountOpen} />
+          </div>
         </div>
-        <div className="mx-auto max-w-6xl px-4 pb-2">
-          <LayerRail current={index} onSelect={goTo} state={state} />
-        </div>
-        <div className="h-[3px] bg-line/60" aria-hidden="true">
-          <motion.div
-            className="h-full origin-left bg-gradient-to-r from-accent via-accent-2 to-highlight"
-            initial={false}
-            animate={{ scaleX: (index + 1) / STEPS.length }}
-            transition={reduce ? { duration: 0 } : SPRING}
-          />
-        </div>
+        {learning && (
+          <>
+            <div className="mx-auto max-w-6xl px-4 pb-2">
+              <LayerRail current={index} onSelect={goTo} state={state} />
+            </div>
+            <div className="h-[3px] bg-line/60" aria-hidden="true">
+              <motion.div
+                className="h-full origin-left bg-gradient-to-r from-accent via-accent-2 to-highlight"
+                initial={false}
+                animate={{ scaleX: (index + 1) / STEPS.length }}
+                transition={reduce ? { duration: 0 } : SPRING}
+              />
+            </div>
+          </>
+        )}
       </header>
 
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 lg:pt-12">
         <main id="contenido" className="min-w-0">
-          {evaluating ? (
-            <EvaluationFlow onExit={() => setEvaluating(false)} />
+          {aside === 'evaluacion' ? (
+            <EvaluationFlow code={participantCode} onExit={() => setAside(null)} />
+          ) : aside === 'diagnostico' || aside === 'final' ? (
+            <KnowledgeTest
+              key={aside}
+              phase={aside}
+              code={participantCode}
+              previous={knowledge[aside] ?? null}
+              onDone={(result) => setKnowledge((k) => ({ ...k, [aside]: result }))}
+              onExit={() => setAside(null)}
+              goTo={goTo}
+            />
+          ) : aside === 'pedagogia' ? (
+            <PedagogyView onExit={() => setAside(null)} />
+          ) : section === 'laboratorio' ? (
+            <LabView lab={lab} onProjects={() => setSection('proyectos')} onLogin={() => setAccountOpen(true)} />
+          ) : section === 'proyectos' ? (
+            <ProjectsView lab={lab} onGoLab={() => setSection('laboratorio')} onLogin={() => setAccountOpen(true)} />
           ) : (
           <>
           <AnimatePresence mode="wait" initial={false} custom={dir}>
@@ -177,16 +297,24 @@ export default function App() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-risk-low opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-risk-low" />
           </span>
-          Tu imagen se analiza en un archivo temporal que se elimina al terminar. No se guarda en el servidor.
+          Sin cuenta, tu imagen se analiza en un archivo temporal que se elimina al terminar. Con cuenta, solo se guarda lo
+          que eliges guardar (con un proyecto abierto en el Laboratorio, también la imagen que subes), y puedes borrarlo cuando quieras.
         </p>
-        {!evaluating && (
-          <p className="mx-auto mt-3 max-w-6xl px-4 text-sm">
-            <button type="button" className="font-medium text-accent underline underline-offset-4" onClick={() => setEvaluating(true)}>
+        <p className="mx-auto mt-3 flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 text-sm">
+          {aside !== 'evaluacion' && (
+            <button type="button" className="font-medium text-accent underline underline-offset-4" onClick={() => setAside('evaluacion')}>
               Participar en la evaluación de usabilidad
             </button>
-          </p>
-        )}
+          )}
+          {aside !== 'pedagogia' && (
+            <button type="button" className="font-medium text-accent underline underline-offset-4" onClick={() => setAside('pedagogia')}>
+              Diseño pedagógico (modelo ADDIE)
+            </button>
+          )}
+        </p>
       </footer>
     </div>
+    </SectionContext>
+    </AccountContext>
   )
 }

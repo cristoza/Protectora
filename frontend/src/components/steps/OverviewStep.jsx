@@ -1,7 +1,8 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { ArrowRight, CheckCircle, Copyright, Eye, HandPointing, MapPinLine, ProhibitInset, ShareNetwork, Tag, UserCircle } from '@phosphor-icons/react'
+import { ArrowRight, CheckCircle, Copyright, Eye, HandPointing, ListChecks, MapPinLine, ProhibitInset, ShareNetwork, Tag, UserCircle } from '@phosphor-icons/react'
 import { LAYER_STEPS } from '../../data/layers.js'
 import { EASE, spotlight, useStagger } from '../../lib/motion.js'
+import StepObjectives from '../StepObjectives.jsx'
 
 const LAYER_ICON = { 1: UserCircle, 2: ProhibitInset, 3: Eye, 4: ShareNetwork }
 
@@ -69,7 +70,7 @@ function ScanMockup() {
   )
 }
 
-export default function OverviewStep({ onStart, onSelect }) {
+export default function OverviewStep({ onStart, onSelect, onDiagnostic, diagnosticDone }) {
   const { list, item } = useStagger(0.08)
   return (
     <motion.section aria-labelledby="step-title" {...list}>
@@ -97,6 +98,23 @@ export default function OverviewStep({ onStart, onSelect }) {
         <div className="relative px-9">
           <ScanMockup />
         </div>
+      </motion.div>
+
+      <motion.div {...item} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ctl bg-accent/10 text-accent">
+          <ListChecks size={24} weight="duotone" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{diagnosticDone ? 'Ya hiciste el diagnóstico inicial' : 'Antes de empezar: ¿qué sabes ya?'}</p>
+          <p className="mt-0.5 text-sm text-muted">
+            {diagnosticDone
+              ? 'Puedes revisar qué temas conviene reforzar. Al final del recorrido, la evaluación final te dirá cuánto avanzaste.'
+              : 'Un diagnóstico opcional y anónimo de unos 8 minutos. Te dice qué temas reforzar y permite comparar al final.'}
+          </p>
+        </div>
+        <button type="button" className="btn btn-outline shrink-0" onClick={onDiagnostic}>
+          {diagnosticDone ? 'Ver mis temas' : 'Hacer el diagnóstico'} <ArrowRight size={16} aria-hidden="true" />
+        </button>
       </motion.div>
 
       <motion.div {...item} className="mt-16 flex flex-wrap items-end justify-between gap-4">
@@ -140,6 +158,10 @@ export default function OverviewStep({ onStart, onSelect }) {
           )
         })}
       </motion.ol>
+
+      <motion.div {...item} className="mt-10">
+        <StepObjectives stepId="mapa" />
+      </motion.div>
     </motion.section>
   )
 }

@@ -4,30 +4,13 @@ import { ArrowLeft, ArrowRight, CheckCircle, PaperPlaneTilt, Warning } from '@ph
 import { EASE } from '../lib/motion.js'
 import { CONSENT, CONTACT, SUS } from '../data/evaluation.js'
 import comprehension from '../data/comprehension.json'
+import Choice from './Choice.jsx'
 
 const STAGES = ['consent', 'sus', 'comprehension', 'thanks']
-// Sin 0/O ni 1/I/L, para que el código se pueda dictar sin confusiones.
-const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 
-// Código anónimo generado en el navegador: no se deriva de ningún dato de la persona.
-function anonymousCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(8))
-  const chars = Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length])
-  return `${chars.slice(0, 4).join('')}-${chars.slice(4).join('')}`
-}
-
-function Choice({ name, value, checked, onChange, children }) {
-  return (
-    <label className={`flex cursor-pointer items-start gap-3 rounded-ctl border p-3 text-sm transition-colors ${checked ? 'border-accent bg-accent/5' : 'border-line bg-white hover:border-accent/50'}`}>
-      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="mt-0.5 accent-[var(--accent)]" />
-      <span>{children}</span>
-    </label>
-  )
-}
-
-export default function EvaluationFlow({ onExit }) {
+// `code` es el código anónimo de la sesión (lib/participant.js), compartido con la evaluación de conocimientos.
+export default function EvaluationFlow({ code, onExit }) {
   const reduce = useReducedMotion()
-  const [code] = useState(anonymousCode)
   const [stage, setStage] = useState('consent')
   const [sus, setSus] = useState(Array(SUS.items.length).fill(null))
   const [answers, setAnswers] = useState({})
